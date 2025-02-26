@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}Minocrisy AI Tools - Hype Remover{% endblock %}
+
+{% block head %}
+<style>
+    #loading-indicator {
+        display: none;
+        text-align: center;
+        margin-top: 20px;
+    }
+    #result-container {
+        display: none;
+        margin-top: 20px;
+    }
+    .form-label {
+        font-weight: bold;
+    }
+    .change-item {
+        margin-bottom: 15px;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+    .original-text {
+        color: #dc3545;
+        text-decoration: line-through;
+    }
+    .replacement-text {
+        color: #198754;
+        font-weight: bold;
+    }
+    .reason-text {
+        font-style: italic;
+        color: #6c757d;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1>Hype Remover</h1>
+        <p class="lead">Remove exaggerated claims and marketing hype from text.</p>
+        
+        <div class="alert alert-info">
+            <strong>How it works:</strong> Enter your marketing text, select a strength level, and our AI will transform it into more factual, measured content.
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                Input
+            </div>
+            <div class="card-body">
+                <form id="hype-remover-form">
+                    <div class="mb-3">
+                        <label for="text-input" class="form-label">Text to Process</label>
+                        <textarea id="text-input" class="form-control" rows="10" placeholder="Enter the marketing text you want to process..." required></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="strength-select" class="form-label">Hype Removal Strength</label>
+                        <select id="strength-select" class="form-select">
+                            <option value="mild">Mild - Tone down obvious exaggerations</option>
+                            <option value="moderate" selected>Moderate - Balance between promotional and factual</option>
+                            <option value="strong">Strong - Aggressively remove all marketing language</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Process Text</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div id="loading-indicator">
+            <div class="card">
+                <div class="card-body text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-3">Processing your text...</p>
+                </div>
+            </div>
+        </div>
+        
+        <div id="result-container">
+            <div class="card mb-4">
+                <div class="card-header">
+                    Processed Text
+                </div>
+                <div class="card-body">
+                    <p id="processed-text"></p>
+                    <button id="copy-button" class="btn btn-sm btn-outline-primary mt-2">Copy to Clipboard</button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    Changes Made
+                </div>
+                <div class="card-body">
+                    <div id="changes-container">
+                        <!-- Changes will be inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('hype-remover-form');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const resultContainer = document.getElementById('result-container');
+        const processedText = document.getElementById('processed-text');
+        const changesContainer = document.getElementById('changes-container');
+        const copyButton = document.getElementById('copy-button');
+        
+        // Handle form submission
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const textInput = document.getElementById('text-input').value;
+            const strength = document.getElementById('strength-select').value;
+            
+            // Show loading indicator
+            loadingIndicator.style.display = 'block';
+            resultContainer.style.display = 'none';
+            
+            // Prepare request data
+            const requestData = {
+                text: textInput,
+                strength: strength
+            };
+            
+            // Send request to API
+            fetch('/tools/hype-remover/process', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(data => {
+                        throw new Error(data.error || 'Error processing text');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Hide loading indicator
+                loadingIndicator.style.display = 'none';
+                
+                // Show result
+                resultContainer.style.display = 'block';
+                processedText.textContent = data.processed_text;
+                
+                // Display changes
+                changesContainer.innerHTML = '';
+                if (data.changes && data.changes.length > 0) {
+                    data.changes.forEach(change => {
+                        const changeItem = document.createElement('div');
+                        changeItem.className = 'change-item';
+                        changeItem.innerHTML = `
+                            <div><span class="original-text">${change.original}</span> → <span class="replacement-text">${change.replacement}</span></div>
+                            <div class="reason-text mt-2">Reason: ${change.reason}</div>
+                        `;
+                        changesContainer.appendChild(changeItem);
+                    });
+                } else {
+                    changesContainer.innerHTML = '<p>No significant changes were made.</p>';
+                }
+            })
+            .catch(error => {
+                // Hide loading indicator
+                loadingIndicator.style.display = 'none';
+                
+                // Show error
+                alert('Error: ' + error.message);
+            });
+        });
+        
+        // Handle copy to clipboard
+        copyButton.addEventListener('click', function() {
+            navigator.clipboard.writeText(processedText.textContent)
+                .then(() => {
+                    const originalText = copyButton.textContent;
+                    copyButton.textContent = 'Copied!';
+                    setTimeout(() => {
+                        copyButton.textContent = originalText;
+                    }, 2000);
+                })
+                .catch(err => {
+                    console.error('Failed to copy text: ', err);
+                    alert('Failed to copy text to clipboard');
+                });
+        });
+    });
+</script>
+{% endblock %}

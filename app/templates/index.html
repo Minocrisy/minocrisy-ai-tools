@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}Minocrisy AI Tools - Home{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 text-center mb-5">
+        <h1>Welcome to Minocrisy AI Tools</h1>
+        <p class="lead">A collection of AI-powered tools for content creation and enhancement</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Talking Head</h5>
+                <p class="card-text">Generate animated talking head videos from text input using ElevenLabs for text-to-speech and RunwayML for animation.</p>
+                <ul class="list-group list-group-flush mb-3">
+                    <li class="list-group-item">Convert text to natural-sounding speech</li>
+                    <li class="list-group-item">Animate a virtual presenter with lip-syncing</li>
+                    <li class="list-group-item">Create engaging video content quickly</li>
+                </ul>
+                <a href="/tools/talking-head" class="btn btn-primary">Try Talking Head</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Hype Remover</h5>
+                <p class="card-text">Remove exaggerated claims and marketing hype from text using OpenAI's language models.</p>
+                <ul class="list-group list-group-flush mb-3">
+                    <li class="list-group-item">Transform marketing copy into factual content</li>
+                    <li class="list-group-item">Adjust the strength of hype removal</li>
+                    <li class="list-group-item">See detailed explanations of changes made</li>
+                </ul>
+                <a href="/tools/hype-remover" class="btn btn-primary">Try Hype Remover</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row" id="xai-tools" style="display: none;">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Grok Chat</h5>
+                <p class="card-text">Chat with xAI's Grok model for intelligent conversations and assistance.</p>
+                <ul class="list-group list-group-flush mb-3">
+                    <li class="list-group-item">Get answers to complex questions</li>
+                    <li class="list-group-item">Generate creative content and ideas</li>
+                    <li class="list-group-item">Adjust temperature for more focused or creative responses</li>
+                </ul>
+                <a href="/tools/xai-chat" class="btn btn-primary">Try Grok Chat</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row" id="hedra-tools" style="display: none;">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Hedra Character Video</h5>
+                <p class="card-text">Generate character videos with synchronized speech using Hedra's API.</p>
+                <ul class="list-group list-group-flush mb-3">
+                    <li class="list-group-item">Create videos of characters speaking your text</li>
+                    <li class="list-group-item">Choose from various character models</li>
+                    <li class="list-group-item">Select different voices for customization</li>
+                </ul>
+                <a href="/tools/hedra-character" class="btn btn-primary">Try Hedra Character Video</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                API Status
+            </div>
+            <div class="card-body">
+                <div id="api-status">
+                    <p>Loading API status...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Fetch API status on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('/api/status')
+            .then(response => response.json())
+            .then(data => {
+                const statusDiv = document.getElementById('api-status');
+                let statusHtml = '<ul class="list-group">';
+                
+                for (const [api, status] of Object.entries(data)) {
+                    const statusClass = status ? 'text-success' : 'text-danger';
+                    const statusText = status ? 'Connected' : 'Not Configured';
+                    const icon = status ? '✅' : '❌';
+                    
+                    statusHtml += `
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            ${api.charAt(0).toUpperCase() + api.slice(1)} API
+                            <span class="${statusClass}">${icon} ${statusText}</span>
+                        </li>
+                    `;
+                    
+                    // Show/hide tool sections based on API status
+                    if (api === 'xai' && status) {
+                        document.getElementById('xai-tools').style.display = 'flex';
+                    }
+                    
+                    if (api === 'hedra' && status) {
+                        document.getElementById('hedra-tools').style.display = 'flex';
+                    }
+                }
+                
+                statusHtml += '</ul>';
+                statusDiv.innerHTML = statusHtml;
+            })
+            .catch(error => {
+                console.error('Error fetching API status:', error);
+                document.getElementById('api-status').innerHTML = '<p class="text-danger">Error loading API status</p>';
+            });
+    });
+</script>
+{% endblock %}

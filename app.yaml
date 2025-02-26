@@ -1,0 +1,55 @@
+# Minocrisy AI Tools - Google Cloud App Engine Configuration
+# This file configures the application for deployment on Google Cloud App Engine.
+
+runtime: python311  # Use Python 3.11 runtime
+
+# Use the F1 (free tier) instance class
+instance_class: F1
+
+# Automatic scaling configuration
+automatic_scaling:
+  min_instances: 0  # Scale down to 0 when not in use (important for free tier)
+  max_instances: 1  # Limit to 1 instance for free tier
+  target_cpu_utilization: 0.65
+  target_throughput_utilization: 0.65
+  max_concurrent_requests: 10
+
+# Environment variables (non-sensitive)
+env_variables:
+  FLASK_ENV: "production"
+  
+# Handlers for static files and routes
+handlers:
+- url: /static
+  static_dir: app/static
+  secure: always
+
+- url: /.*
+  script: auto
+  secure: always
+
+# Include only the necessary files
+includes:
+- env_variables.yaml  # Secret environment variables (not in source control)
+
+# Network settings
+network:
+  session_affinity: true
+
+# Health check configuration
+health_check:
+  enable_health_check: true
+  check_interval_sec: 30
+  timeout_sec: 4
+  unhealthy_threshold: 2
+  healthy_threshold: 2
+
+# Resources limits
+resources:
+  cpu: 1
+  memory_gb: 0.5
+  disk_size_gb: 10
+
+# Inbound services
+inbound_services:
+- warmup
