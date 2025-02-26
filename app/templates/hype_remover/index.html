@@ -13,6 +13,10 @@
         display: none;
         margin-top: 20px;
     }
+    #feedback-container {
+        display: none;
+        margin-top: 20px;
+    }
     .form-label {
         font-weight: bold;
     }
@@ -34,13 +38,115 @@
         font-style: italic;
         color: #6c757d;
     }
+    .confidence-indicator {
+        height: 5px;
+        background-color: #e9ecef;
+        border-radius: 2px;
+        margin-top: 5px;
+        margin-bottom: 10px;
+    }
+    .confidence-fill {
+        height: 100%;
+        border-radius: 2px;
+    }
+    .high-confidence {
+        background-color: #198754;
+    }
+    .medium-confidence {
+        background-color: #ffc107;
+    }
+    .low-confidence {
+        background-color: #dc3545;
+    }
+    .custom-terms-container {
+        display: none;
+        margin-top: 10px;
+    }
+    .custom-term-badge {
+        display: inline-block;
+        background-color: #e9ecef;
+        padding: 0.25rem 0.5rem;
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+        border-radius: 0.25rem;
+    }
+    .custom-term-badge .remove-term {
+        margin-left: 5px;
+        cursor: pointer;
+        color: #dc3545;
+    }
+    .advanced-options-toggle {
+        cursor: pointer;
+        color: #0d6efd;
+        text-decoration: underline;
+        user-select: none;
+    }
+    .advanced-options {
+        display: none;
+        margin-top: 15px;
+        padding: 15px;
+        background-color: #f8f9fa;
+        border-radius: 5px;
+    }
+    .score-container {
+        margin-bottom: 15px;
+    }
+    .score-label {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 5px;
+    }
+    .score-bar {
+        height: 8px;
+        background-color: #e9ecef;
+        border-radius: 4px;
+    }
+    .score-fill {
+        height: 100%;
+        border-radius: 4px;
+    }
+    .hype-score-fill {
+        background-color: #dc3545;
+    }
+    .accuracy-score-fill {
+        background-color: #198754;
+    }
+    .star-rating {
+        display: inline-block;
+        font-size: 1.5rem;
+        cursor: pointer;
+    }
+    .star-rating .star {
+        color: #e9ecef;
+        transition: color 0.2s;
+    }
+    .star-rating .star.selected {
+        color: #ffc107;
+    }
+    .api-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        margin-left: 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
+        font-weight: bold;
+        vertical-align: middle;
+    }
+    .api-badge.xai {
+        background-color: #6f42c1;
+        color: white;
+    }
+    .api-badge.openai {
+        background-color: #20c997;
+        color: white;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col-md-12">
-        <h1>Hype Remover</h1>
+        <h1>Hype Remover <span id="api-badge" class="api-badge xai">xAI</span></h1>
         <p class="lead">Remove exaggerated claims and marketing hype from text.</p>
         
         <div class="alert alert-info">
@@ -71,6 +177,38 @@
                         </select>
                     </div>
                     
+                    <div class="mb-3">
+                        <div class="advanced-options-toggle" id="advanced-options-toggle">
+                            <i class="fas fa-cog"></i> Advanced Options
+                        </div>
+                        
+                        <div class="advanced-options" id="advanced-options">
+                            <div class="mb-3">
+                                <label for="context-input" class="form-label">Context (Optional)</label>
+                                <textarea id="context-input" class="form-control" rows="3" placeholder="Provide context about the text to improve accuracy (e.g., industry, target audience, purpose)"></textarea>
+                                <div class="form-text">Adding context helps the AI understand domain-specific terminology and legitimate claims.</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Custom Hype Terms (Optional)</label>
+                                <div class="input-group">
+                                    <input type="text" id="custom-term-input" class="form-control" placeholder="Add custom terms to identify as hype">
+                                    <button class="btn btn-outline-secondary" type="button" id="add-term-button">Add</button>
+                                </div>
+                                <div class="form-text">Add specific terms or phrases you want to identify as hype.</div>
+                                <div id="custom-terms-container" class="custom-terms-container"></div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="use-xai-switch" checked>
+                                    <label class="form-check-label" for="use-xai-switch">Use xAI (Grok) API</label>
+                                </div>
+                                <div class="form-text">Toggle between xAI (Grok) and OpenAI for processing.</div>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <button type="submit" class="btn btn-primary">Process Text</button>
                 </form>
             </div>
@@ -95,8 +233,33 @@
                     Processed Text
                 </div>
                 <div class="card-body">
+                    <div class="score-container">
+                        <div class="score-label">
+                            <span>Hype Score:</span>
+                            <span id="hype-score-value">0%</span>
+                        </div>
+                        <div class="score-bar">
+                            <div id="hype-score-fill" class="score-fill hype-score-fill" style="width: 0%"></div>
+                        </div>
+                        <div class="form-text">Higher score indicates more hype in the original text.</div>
+                    </div>
+                    
+                    <div class="score-container">
+                        <div class="score-label">
+                            <span>Accuracy Score:</span>
+                            <span id="accuracy-score-value">0%</span>
+                        </div>
+                        <div class="score-bar">
+                            <div id="accuracy-score-fill" class="score-fill accuracy-score-fill" style="width: 0%"></div>
+                        </div>
+                        <div class="form-text">Higher score indicates higher confidence in the accuracy of the processed text.</div>
+                    </div>
+                    
                     <p id="processed-text"></p>
-                    <button id="copy-button" class="btn btn-sm btn-outline-primary mt-2">Copy to Clipboard</button>
+                    <div class="d-flex justify-content-between mt-3">
+                        <button id="copy-button" class="btn btn-sm btn-outline-primary">Copy to Clipboard</button>
+                        <button id="feedback-button" class="btn btn-sm btn-outline-secondary">Provide Feedback</button>
+                    </div>
                 </div>
             </div>
             
@@ -111,6 +274,36 @@
                 </div>
             </div>
         </div>
+        
+        <div id="feedback-container" class="card">
+            <div class="card-header">
+                Provide Feedback
+            </div>
+            <div class="card-body">
+                <form id="feedback-form">
+                    <div class="mb-3">
+                        <label class="form-label">How would you rate the quality of hype removal?</label>
+                        <div class="star-rating" id="star-rating">
+                            <span class="star" data-rating="1">★</span>
+                            <span class="star" data-rating="2">★</span>
+                            <span class="star" data-rating="3">★</span>
+                            <span class="star" data-rating="4">★</span>
+                            <span class="star" data-rating="5">★</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="feedback-comments" class="form-label">Comments (Optional)</label>
+                        <textarea id="feedback-comments" class="form-control" rows="3" placeholder="Please share any specific feedback about the results..."></textarea>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <button type="button" id="cancel-feedback-button" class="btn btn-outline-secondary">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Submit Feedback</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -118,29 +311,144 @@
 {% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Form elements
         const form = document.getElementById('hype-remover-form');
+        const textInput = document.getElementById('text-input');
+        const strengthSelect = document.getElementById('strength-select');
+        const contextInput = document.getElementById('context-input');
+        const customTermInput = document.getElementById('custom-term-input');
+        const addTermButton = document.getElementById('add-term-button');
+        const customTermsContainer = document.getElementById('custom-terms-container');
+        const useXaiSwitch = document.getElementById('use-xai-switch');
+        const apiBadge = document.getElementById('api-badge');
+        
+        // Advanced options toggle
+        const advancedOptionsToggle = document.getElementById('advanced-options-toggle');
+        const advancedOptions = document.getElementById('advanced-options');
+        
+        // Result elements
         const loadingIndicator = document.getElementById('loading-indicator');
         const resultContainer = document.getElementById('result-container');
         const processedText = document.getElementById('processed-text');
         const changesContainer = document.getElementById('changes-container');
         const copyButton = document.getElementById('copy-button');
+        const feedbackButton = document.getElementById('feedback-button');
+        const hypeScoreValue = document.getElementById('hype-score-value');
+        const hypeScoreFill = document.getElementById('hype-score-fill');
+        const accuracyScoreValue = document.getElementById('accuracy-score-value');
+        const accuracyScoreFill = document.getElementById('accuracy-score-fill');
+        
+        // Feedback elements
+        const feedbackContainer = document.getElementById('feedback-container');
+        const feedbackForm = document.getElementById('feedback-form');
+        const starRating = document.getElementById('star-rating');
+        const feedbackComments = document.getElementById('feedback-comments');
+        const cancelFeedbackButton = document.getElementById('cancel-feedback-button');
+        
+        // Store the original and processed text for feedback
+        let originalText = '';
+        let processedTextContent = '';
+        
+        // Store custom terms
+        const customTerms = [];
+        
+        // Toggle advanced options
+        advancedOptionsToggle.addEventListener('click', function() {
+            if (advancedOptions.style.display === 'block') {
+                advancedOptions.style.display = 'none';
+            } else {
+                advancedOptions.style.display = 'block';
+            }
+        });
+        
+        // Update API badge when toggle changes
+        useXaiSwitch.addEventListener('change', function() {
+            if (this.checked) {
+                apiBadge.textContent = 'xAI';
+                apiBadge.className = 'api-badge xai';
+            } else {
+                apiBadge.textContent = 'OpenAI';
+                apiBadge.className = 'api-badge openai';
+            }
+        });
+        
+        // Add custom term
+        addTermButton.addEventListener('click', function() {
+            addCustomTerm();
+        });
+        
+        // Add custom term on Enter key
+        customTermInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addCustomTerm();
+            }
+        });
+        
+        function addCustomTerm() {
+            const term = customTermInput.value.trim();
+            if (term && !customTerms.includes(term)) {
+                customTerms.push(term);
+                renderCustomTerms();
+                customTermInput.value = '';
+            }
+        }
+        
+        function renderCustomTerms() {
+            customTermsContainer.innerHTML = '';
+            
+            if (customTerms.length > 0) {
+                customTermsContainer.style.display = 'block';
+                
+                customTerms.forEach((term, index) => {
+                    const badge = document.createElement('span');
+                    badge.className = 'custom-term-badge';
+                    badge.innerHTML = `${term} <span class="remove-term" data-index="${index}">×</span>`;
+                    customTermsContainer.appendChild(badge);
+                });
+                
+                // Add event listeners to remove buttons
+                document.querySelectorAll('.remove-term').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const index = parseInt(this.dataset.index);
+                        customTerms.splice(index, 1);
+                        renderCustomTerms();
+                    });
+                });
+            } else {
+                customTermsContainer.style.display = 'none';
+            }
+        }
         
         // Handle form submission
         form.addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const textInput = document.getElementById('text-input').value;
-            const strength = document.getElementById('strength-select').value;
+            originalText = textInput.value;
+            const strength = strengthSelect.value;
+            const context = contextInput.value.trim();
+            const useXai = useXaiSwitch.checked;
             
             // Show loading indicator
             loadingIndicator.style.display = 'block';
             resultContainer.style.display = 'none';
+            feedbackContainer.style.display = 'none';
             
             // Prepare request data
             const requestData = {
-                text: textInput,
-                strength: strength
+                text: originalText,
+                strength: strength,
+                use_xai: useXai
             };
+            
+            // Add optional parameters if provided
+            if (customTerms.length > 0) {
+                requestData.custom_hype_terms = customTerms;
+            }
+            
+            if (context) {
+                requestData.context = context;
+            }
             
             // Send request to API
             fetch('/tools/hype-remover/process', {
@@ -162,19 +470,45 @@
                 // Hide loading indicator
                 loadingIndicator.style.display = 'none';
                 
+                // Store processed text for feedback
+                processedTextContent = data.processed_text;
+                
                 // Show result
                 resultContainer.style.display = 'block';
-                processedText.textContent = data.processed_text;
+                processedText.textContent = processedTextContent;
+                
+                // Update scores
+                const hypeScore = data.overall_hype_score || 0;
+                const accuracyScore = data.accuracy_score || 0;
+                
+                hypeScoreValue.textContent = `${Math.round(hypeScore * 100)}%`;
+                hypeScoreFill.style.width = `${hypeScore * 100}%`;
+                
+                accuracyScoreValue.textContent = `${Math.round(accuracyScore * 100)}%`;
+                accuracyScoreFill.style.width = `${accuracyScore * 100}%`;
                 
                 // Display changes
                 changesContainer.innerHTML = '';
                 if (data.changes && data.changes.length > 0) {
                     data.changes.forEach(change => {
+                        const confidence = change.confidence || 0.9;
+                        let confidenceClass = 'high-confidence';
+                        
+                        if (confidence < 0.7) {
+                            confidenceClass = 'low-confidence';
+                        } else if (confidence < 0.9) {
+                            confidenceClass = 'medium-confidence';
+                        }
+                        
                         const changeItem = document.createElement('div');
                         changeItem.className = 'change-item';
                         changeItem.innerHTML = `
                             <div><span class="original-text">${change.original}</span> → <span class="replacement-text">${change.replacement}</span></div>
                             <div class="reason-text mt-2">Reason: ${change.reason}</div>
+                            <div class="confidence-text mt-1 small">Confidence: ${Math.round(confidence * 100)}%</div>
+                            <div class="confidence-indicator">
+                                <div class="confidence-fill ${confidenceClass}" style="width: ${confidence * 100}%"></div>
+                            </div>
                         `;
                         changesContainer.appendChild(changeItem);
                     });
@@ -205,6 +539,121 @@
                     console.error('Failed to copy text: ', err);
                     alert('Failed to copy text to clipboard');
                 });
+        });
+        
+        // Handle feedback button
+        feedbackButton.addEventListener('click', function() {
+            resultContainer.style.display = 'none';
+            feedbackContainer.style.display = 'block';
+            
+            // Reset star rating
+            document.querySelectorAll('.star').forEach(star => {
+                star.classList.remove('selected');
+            });
+            
+            // Reset comments
+            feedbackComments.value = '';
+        });
+        
+        // Handle cancel feedback button
+        cancelFeedbackButton.addEventListener('click', function() {
+            feedbackContainer.style.display = 'none';
+            resultContainer.style.display = 'block';
+        });
+        
+        // Handle star rating
+        let selectedRating = 0;
+        
+        document.querySelectorAll('.star').forEach(star => {
+            // Hover effect
+            star.addEventListener('mouseover', function() {
+                const rating = parseInt(this.dataset.rating);
+                
+                document.querySelectorAll('.star').forEach(s => {
+                    if (parseInt(s.dataset.rating) <= rating) {
+                        s.classList.add('selected');
+                    } else {
+                        s.classList.remove('selected');
+                    }
+                });
+            });
+            
+            // Click to select
+            star.addEventListener('click', function() {
+                selectedRating = parseInt(this.dataset.rating);
+            });
+        });
+        
+        // Reset stars when mouse leaves the container
+        starRating.addEventListener('mouseleave', function() {
+            document.querySelectorAll('.star').forEach(star => {
+                if (parseInt(star.dataset.rating) <= selectedRating) {
+                    star.classList.add('selected');
+                } else {
+                    star.classList.remove('selected');
+                }
+            });
+        });
+        
+        // Handle feedback form submission
+        feedbackForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (selectedRating === 0) {
+                alert('Please select a rating');
+                return;
+            }
+            
+            const comments = feedbackComments.value.trim();
+            
+            // Prepare feedback data
+            const feedbackData = {
+                original_text: originalText,
+                processed_text: processedTextContent,
+                rating: selectedRating,
+                comments: comments
+            };
+            
+            // Show loading indicator
+            loadingIndicator.style.display = 'block';
+            feedbackContainer.style.display = 'none';
+            
+            // Send feedback to API
+            fetch('/tools/hype-remover/feedback', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(feedbackData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(data => {
+                        throw new Error(data.message || 'Error submitting feedback');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Hide loading indicator
+                loadingIndicator.style.display = 'none';
+                
+                // Show result
+                resultContainer.style.display = 'block';
+                
+                // Show success message
+                alert(data.message || 'Thank you for your feedback!');
+            })
+            .catch(error => {
+                // Hide loading indicator
+                loadingIndicator.style.display = 'none';
+                
+                // Show result
+                resultContainer.style.display = 'block';
+                
+                // Show error
+                alert('Error: ' + error.message);
+            });
         });
     });
 </script>
