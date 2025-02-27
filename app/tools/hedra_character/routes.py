@@ -5,7 +5,7 @@ Routes for the Hedra Character Video tool.
 import os
 from flask import request, jsonify, render_template, current_app, send_file, url_for
 from werkzeug.utils import secure_filename
-from app.tools.hedra_analysis import hedra_character_bp
+from app.tools.hedra_character import hedra_character_bp
 from app.utils.hedra_api import generate_character_video, list_characters, list_voices
 from app.utils.secrets import get_hedra_api_key
 

@@ -61,7 +61,7 @@ def create_app(test_config=None):
         app.register_blueprint(xai_chat_bp, url_prefix="/tools/xai-chat")
     
     if app.config.get("HEDRA_API_KEY"):
-        from app.tools.hedra_analysis import hedra_character_bp
+        from app.tools.hedra_character import hedra_character_bp
         app.register_blueprint(hedra_character_bp, url_prefix="/tools/hedra-character")
     
     # Health check endpoint

@@ -103,7 +103,7 @@ minocrisy-ai-tools/
 │   │   │   ├── __init__.py
 │   │   │   ├── routes.py
 │   │   │   └── README.md       # Tool-specific documentation
-│   │   └── hedra_analysis/     # Hedra Character Video tool
+│   │   └── hedra_character/    # Hedra Character Video tool
 │   │       ├── __init__.py
 │   │       ├── routes.py
 │   │       └── README.md       # Tool-specific documentation
@@ -174,7 +174,7 @@ You can find the documentation for each tool here:
 - [Talking Head Tool](app/tools/talking_head/README.md)
 - [Hype Remover Tool](app/tools/hype_remover/README.md)
 - [Grok Chat Tool](app/tools/xai_chat/README.md)
-- [Hedra Character Video Tool](app/tools/hedra_analysis/README.md)
+- [Hedra Character Video Tool](app/tools/hedra_character/README.md)
 
 ## Adding New Tools
 

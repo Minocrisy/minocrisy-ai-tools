@@ -8,4 +8,4 @@ from flask import Blueprint
 hedra_character_bp = Blueprint("hedra_character", __name__)
 
 # Import routes to register them with the blueprint
-from app.tools.hedra_analysis import routes
+from app.tools.hedra_character import routes
