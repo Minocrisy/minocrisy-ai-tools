@@ -6,7 +6,7 @@ A modular Flask-based web application for AI tools like Talking Head and Hype Re
 
 - **Talking Head Tool**: Generate animated talking head videos from text input using ElevenLabs for text-to-speech and RunwayML for animation.
 - **Hype Remover Tool**: Remove exaggerated claims and marketing hype from text using OpenAI's language models.
-- **Grok Chat Tool**: Chat with xAI's Grok model for intelligent conversations and assistance.
+- **Grok Chat Tool**: Chat with xAI's Grok model for intelligent conversations and assistance. Supports image and document uploads for visual analysis with Grok Vision.
 - **Hedra Character Video Tool**: Generate character videos with synchronized speech using Hedra's API.
 - **Modular Architecture**: Easily add new AI tools to the platform.
 - **Secure API Key Management**: Store API keys in .env files for local development or Google Cloud Secret Manager for production.
@@ -92,17 +92,21 @@ minocrisy-ai-tools/
 │   │   ├── talking_head/       # Talking Head tool
 │   │   │   ├── __init__.py
 │   │   │   ├── routes.py
-│   │   │   └── service.py
+│   │   │   ├── service.py
+│   │   │   └── README.md       # Tool-specific documentation
 │   │   ├── hype_remover/       # Hype Remover tool
 │   │   │   ├── __init__.py
 │   │   │   ├── routes.py
-│   │   │   └── service.py
+│   │   │   ├── service.py
+│   │   │   └── README.md       # Tool-specific documentation
 │   │   ├── xai_chat/           # Grok Chat tool
 │   │   │   ├── __init__.py
-│   │   │   └── routes.py
+│   │   │   ├── routes.py
+│   │   │   └── README.md       # Tool-specific documentation
 │   │   └── hedra_analysis/     # Hedra Character Video tool
 │   │       ├── __init__.py
-│   │       └── routes.py
+│   │       ├── routes.py
+│   │       └── README.md       # Tool-specific documentation
 │   └── utils/                  # Utility functions
 │       ├── __init__.py
 │       ├── secrets.py          # API key management
@@ -155,15 +159,33 @@ For production deployment on Google Cloud, there are two options:
 
 2. **Google Cloud Secret Manager**: For enhanced security, API keys can be stored in Google Cloud Secret Manager. The application will automatically check Secret Manager if a key is not found in environment variables.
 
+## Tool Documentation
+
+Each tool in the platform has its own detailed documentation in a README.md file within its directory. These tool-specific READMEs provide:
+
+- Detailed feature descriptions
+- How the tool works
+- API requirements
+- Implementation details (routes and service functions)
+- Usage examples with code snippets
+- Troubleshooting information
+
+You can find the documentation for each tool here:
+- [Talking Head Tool](app/tools/talking_head/README.md)
+- [Hype Remover Tool](app/tools/hype_remover/README.md)
+- [Grok Chat Tool](app/tools/xai_chat/README.md)
+- [Hedra Character Video Tool](app/tools/hedra_analysis/README.md)
+
 ## Adding New Tools
 
 To add a new tool to the platform:
 
 1. Create a new directory in `app/tools/` for your tool.
-2. Create the necessary files (`__init__.py`, `routes.py`, `service.py`).
+2. Create the necessary files (`__init__.py`, `routes.py`, `service.py`, `README.md`).
 3. Register the tool's blueprint in `app/__init__.py`.
 4. Add a template in `app/templates/` for the tool's UI.
 5. Update the main page to include a link to your new tool.
+6. Add the tool to the navigation menu in `app/templates/base.html`.
 
 ## Troubleshooting
 
