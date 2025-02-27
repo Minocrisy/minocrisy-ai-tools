@@ -32,6 +32,7 @@ def create_app(test_config=None):
         XAI_API_URL=os.environ.get("XAI_API_URL", "https://api.xai.com/v1"),
         HEDRA_API_KEY=os.environ.get("HEDRA_API_KEY", ""),
         HEDRA_API_URL=os.environ.get("HEDRA_API_URL", "https://api.hedra.com/v1"),
+        GEMINI_API_KEY=os.environ.get("GEMINI_API_KEY", ""),
         GCP_PROJECT_ID=os.environ.get("GCP_PROJECT_ID", ""),
     )
     

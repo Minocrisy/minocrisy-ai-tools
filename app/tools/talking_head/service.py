@@ -6,7 +6,11 @@ import os
 import requests
 import json
 import time
+import uuid
 from flask import current_app
+from app.utils.openai_api import generate_image_dalle, generate_image_gpt4o, download_image
+from app.utils.xai_api import generate_image as generate_image_xai
+from app.utils.gemini_api import generate_image as generate_image_gemini
 
 def generate_audio(text, output_path, voice_id, api_key):
     """
@@ -51,7 +55,99 @@ def generate_audio(text, output_path, voice_id, api_key):
     
     return output_path
 
-def generate_talking_head(audio_path, output_path, api_key):
+def generate_image(prompt, generator="default", model=None, save_path=None, as_data_uri=False):
+    """
+    Generate an image using the specified AI image generator.
+    
+    Args:
+        prompt: The text prompt to generate an image from.
+        generator: The image generator to use (default: "default").
+                   Options: "default", "dalle", "gpt4o", "xai"
+        model: The specific model to use (optional, depends on generator).
+        save_path: The path to save the image file (optional).
+        as_data_uri: Whether to return the image as a data URI (default: False).
+        
+    Returns:
+        The path to the saved image file, the image URL, or a data URI.
+    """
+    image_url = None
+    
+    try:
+        if generator == "dalle":
+            # Use DALL-E models
+            dalle_model = model or "dall-e-3"
+            urls = generate_image_dalle(prompt, model=dalle_model)
+            if urls and len(urls) > 0:
+                image_url = urls[0]
+        
+        elif generator == "gpt4o":
+            # Use GPT-4o models
+            gpt4o_model = model or "gpt-4o-mini"
+            image_url = generate_image_gpt4o(prompt, model=gpt4o_model)
+        
+        elif generator == "xai":
+            # Use xAI (Grok) models
+            xai_model = model or "grok-image-1"
+            urls = generate_image_xai(prompt, model=xai_model)
+            if urls and len(urls) > 0:
+                image_url = urls[0]
+        
+        elif generator == "gemini":
+            # Use Gemini models
+            gemini_model = model or "gemini-2.0-flash"
+            urls = generate_image_gemini(prompt, model=gemini_model)
+            if urls and len(urls) > 0:
+                image_url = urls[0]
+        
+        else:
+            # Default to using a pre-defined image
+            default_url = "https://storage.googleapis.com/minocrisy-ai-tools/default_face.jpg"
+            if as_data_uri:
+                # Convert default image to data URI
+                image_data = download_image(default_url)
+                if image_data:
+                    import base64
+                    base64_image = base64.b64encode(image_data).decode("utf-8")
+                    return f"data:image/jpeg;base64,{base64_image}"
+            return default_url
+        
+        if not image_url:
+            current_app.logger.error(f"Failed to generate image with {generator}")
+            default_url = "https://storage.googleapis.com/minocrisy-ai-tools/default_face.jpg"
+            if as_data_uri:
+                # Convert default image to data URI
+                image_data = download_image(default_url)
+                if image_data:
+                    import base64
+                    base64_image = base64.b64encode(image_data).decode("utf-8")
+                    return f"data:image/jpeg;base64,{base64_image}"
+            return default_url
+        
+        # If save_path is provided, download and save the image
+        if save_path or as_data_uri:
+            image_data = download_image(image_url)
+            if image_data:
+                if save_path:
+                    with open(save_path, "wb") as f:
+                        f.write(image_data)
+                
+                if as_data_uri:
+                    import base64
+                    import mimetypes
+                    mime_type = mimetypes.guess_type(image_url)[0] or "image/jpeg"
+                    base64_image = base64.b64encode(image_data).decode("utf-8")
+                    return f"data:{mime_type};base64,{base64_image}"
+                
+                if save_path:
+                    return save_path
+        
+        return image_url
+    
+    except Exception as e:
+        current_app.logger.error(f"Error generating image: {e}")
+        return "https://storage.googleapis.com/minocrisy-ai-tools/default_face.jpg"
+
+def generate_talking_head(audio_path, output_path, api_key, image_url=None):
     """
     Generate a talking head video from an audio file using RunwayML API.
     
@@ -59,35 +155,45 @@ def generate_talking_head(audio_path, output_path, api_key):
         audio_path: The path to the audio file.
         output_path: The path to save the video file.
         api_key: The RunwayML API key.
+        image_url: The URL of the image to use as the face (optional).
         
     Returns:
         The path to the generated video file.
     """
-    # RunwayML API endpoint for Gen-2 Lip Sync
-    url = "https://api.runwayml.com/v1/generationJob"
+    # RunwayML API endpoint for Gen-3 Turbo
+    url = "https://api.dev.runwayml.com/v1/image_to_video"
     
     headers = {
         "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "X-Runway-Version": "2024-11-06"
     }
     
     # Read the audio file
     with open(audio_path, "rb") as f:
         audio_data = f.read()
     
+    # Use the provided image URL or default to the pre-defined image
+    default_image_url = "https://storage.googleapis.com/minocrisy-ai-tools/default_face.jpg"
+    if not image_url:
+        image_url = default_image_url
+    
+    # Download the image and convert to base64 if it's a URL
+    if not image_url.startswith("data:image/"):
+        image_data = download_image(image_url)
+        if image_data:
+            import base64
+            import mimetypes
+            mime_type = mimetypes.guess_type(image_url)[0] or "image/jpeg"
+            base64_image = base64.b64encode(image_data).decode("utf-8")
+            image_url = f"data:{mime_type};base64,{base64_image}"
+    
     # Create a generation job
     data = {
-        "model": "lip-sync",
-        "input": {
-            "audio": {
-                "data": audio_data.hex(),
-                "mime_type": "audio/mpeg"
-            },
-            "image": {
-                "url": "https://storage.googleapis.com/minocrisy-ai-tools/default_face.jpg"  # Default face image
-            }
-        },
-        "webhook": None
+        "model": "gen3a_turbo",
+        "promptImage": image_url,
+        "promptText": "Generate a talking head video",
+        "promptAudio": f"data:audio/mpeg;base64,{audio_data.hex()}"
     }
     
     # Start the generation job
@@ -101,7 +207,7 @@ def generate_talking_head(audio_path, output_path, api_key):
     job_id = response.json().get("id")
     
     # Poll for job completion
-    status_url = f"https://api.runwayml.com/v1/generationJob/{job_id}"
+    status_url = f"https://api.dev.runwayml.com/v1/image_to_video/{job_id}"
     
     max_attempts = 60  # 5 minutes (5 seconds * 60)
     attempts = 0
@@ -119,9 +225,9 @@ def generate_talking_head(audio_path, output_path, api_key):
         status_data = status_response.json()
         status = status_data.get("status")
         
-        if status == "COMPLETED":
+        if status == "SUCCEEDED":
             # Download the video
-            video_url = status_data.get("output", {}).get("video", {}).get("url")
+            video_url = status_data.get("result", {}).get("video")
             
             if not video_url:
                 raise Exception("No video URL in RunwayML response")

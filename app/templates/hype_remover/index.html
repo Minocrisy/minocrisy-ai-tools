@@ -140,6 +140,10 @@
         background-color: #20c997;
         color: white;
     }
+    .api-badge.gemini {
+        background-color: #4285F4;
+        color: white;
+    }
 </style>
 {% endblock %}
 
@@ -150,7 +154,7 @@
         <p class="lead">Remove exaggerated claims and marketing hype from text.</p>
         
         <div class="alert alert-info">
-            <strong>How it works:</strong> Enter your marketing text, select a strength level, and our AI will transform it into more factual, measured content.
+            <strong>How it works:</strong> Enter your marketing text, select a strength level, and our AI will transform it into more factual, measured content. Choose from multiple AI models including xAI (Grok), OpenAI, and Gemini Flash 2.0.
         </div>
     </div>
 </div>
@@ -200,11 +204,16 @@
                             </div>
                             
                             <div class="mb-3">
-                                <div class="form-check form-switch">
+                                <label class="form-label">AI Model Selection</label>
+                                <div class="form-check form-switch mb-2">
                                     <input class="form-check-input" type="checkbox" id="use-xai-switch" checked>
                                     <label class="form-check-label" for="use-xai-switch">Use xAI (Grok) API</label>
                                 </div>
-                                <div class="form-text">Toggle between xAI (Grok) and OpenAI for processing.</div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="use-gemini-switch">
+                                    <label class="form-check-label" for="use-gemini-switch">Use Gemini Flash 2.0 API</label>
+                                </div>
+                                <div class="form-text">Select which AI model to use for processing. Gemini takes precedence over xAI if both are selected.</div>
                             </div>
                         </div>
                     </div>
@@ -320,6 +329,7 @@
         const addTermButton = document.getElementById('add-term-button');
         const customTermsContainer = document.getElementById('custom-terms-container');
         const useXaiSwitch = document.getElementById('use-xai-switch');
+        const useGeminiSwitch = document.getElementById('use-gemini-switch');
         const apiBadge = document.getElementById('api-badge');
         
         // Advanced options toggle
@@ -363,14 +373,25 @@
         
         // Update API badge when toggle changes
         useXaiSwitch.addEventListener('change', function() {
-            if (this.checked) {
+            updateApiBadge();
+        });
+        
+        useGeminiSwitch.addEventListener('change', function() {
+            updateApiBadge();
+        });
+        
+        function updateApiBadge() {
+            if (useGeminiSwitch.checked) {
+                apiBadge.textContent = 'Gemini';
+                apiBadge.className = 'api-badge gemini';
+            } else if (useXaiSwitch.checked) {
                 apiBadge.textContent = 'xAI';
                 apiBadge.className = 'api-badge xai';
             } else {
                 apiBadge.textContent = 'OpenAI';
                 apiBadge.className = 'api-badge openai';
             }
-        });
+        }
         
         // Add custom term
         addTermButton.addEventListener('click', function() {
@@ -428,6 +449,7 @@
             const strength = strengthSelect.value;
             const context = contextInput.value.trim();
             const useXai = useXaiSwitch.checked;
+            const useGemini = useGeminiSwitch.checked;
             
             // Show loading indicator
             loadingIndicator.style.display = 'block';
@@ -438,7 +460,8 @@
             const requestData = {
                 text: originalText,
                 strength: strength,
-                use_xai: useXai
+                use_xai: useXai,
+                use_gemini: useGemini
             };
             
             // Add optional parameters if provided

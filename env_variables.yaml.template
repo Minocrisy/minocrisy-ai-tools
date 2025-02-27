@@ -24,5 +24,8 @@ env_variables:
   HEDRA_API_KEY: "your-hedra-api-key"
   HEDRA_API_URL: "https://api.hedra.com/v1"
   
+  # Google Gemini API
+  GEMINI_API_KEY: "your-gemini-api-key"
+  
   # Google Cloud Project ID (for Secret Manager)
   GCP_PROJECT_ID: "your-gcp-project-id"

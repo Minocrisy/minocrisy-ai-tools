@@ -5,7 +5,7 @@ Routes for the Hype Remover tool.
 from flask import request, jsonify, render_template, current_app
 from app.tools.hype_remover import hype_remover_bp
 from app.tools.hype_remover.service import remove_hype, store_feedback
-from app.utils.secrets import get_openai_api_key, get_xai_api_key
+from app.utils.secrets import get_openai_api_key, get_xai_api_key, get_gemini_api_key
 
 @hype_remover_bp.route("/", methods=["GET"])
 def index():
@@ -23,7 +23,8 @@ def process():
         "strength": "Optional strength level (mild, moderate, strong)",
         "custom_hype_terms": ["Optional", "list", "of", "custom", "hype", "terms"],
         "context": "Optional context about the text",
-        "use_xai": true/false (default: true)
+        "use_xai": true/false (default: true),
+        "use_gemini": true/false (default: false)
     }
     
     Returns:
@@ -45,6 +46,7 @@ def process():
     # Get API keys
     xai_api_key = get_xai_api_key()
     openai_api_key = get_openai_api_key()
+    gemini_api_key = get_gemini_api_key()
     
     # Get request data
     data = request.get_json()
@@ -56,18 +58,35 @@ def process():
     custom_hype_terms = data.get("custom_hype_terms", [])
     context = data.get("context")
     use_xai = data.get("use_xai", True)
+    use_gemini = data.get("use_gemini", False)
     
     # Check if appropriate API key is available
-    if use_xai and not xai_api_key:
-        if openai_api_key:
-            # Fall back to OpenAI if xAI key is not available
+    if use_gemini:
+        if not gemini_api_key:
+            use_gemini = False
+            if xai_api_key:
+                use_xai = True
+                current_app.logger.warning("Gemini API key not configured, falling back to xAI")
+            elif openai_api_key:
+                use_xai = False
+                current_app.logger.warning("Gemini API key not configured, falling back to OpenAI")
+            else:
+                return jsonify({"error": "No API keys configured"}), 500
+    elif use_xai and not xai_api_key:
+        if gemini_api_key:
+            use_gemini = True
+            use_xai = False
+            current_app.logger.warning("xAI API key not configured, falling back to Gemini")
+        elif openai_api_key:
             use_xai = False
             current_app.logger.warning("xAI API key not configured, falling back to OpenAI")
         else:
             return jsonify({"error": "No API keys configured"}), 500
     elif not use_xai and not openai_api_key:
-        if xai_api_key:
-            # Fall back to xAI if OpenAI key is not available
+        if gemini_api_key:
+            use_gemini = True
+            current_app.logger.warning("OpenAI API key not configured, falling back to Gemini")
+        elif xai_api_key:
             use_xai = True
             current_app.logger.warning("OpenAI API key not configured, falling back to xAI")
         else:
@@ -75,14 +94,15 @@ def process():
     
     try:
         # Process the text to remove hype
-        api_key = openai_api_key if not use_xai else None
+        api_key = openai_api_key if not use_xai and not use_gemini else None
         result = remove_hype(
             text=text, 
             strength=strength, 
             custom_hype_terms=custom_hype_terms,
             context=context,
             api_key=api_key,
-            use_xai=use_xai
+            use_xai=use_xai,
+            use_gemini=use_gemini
         )
         
         return jsonify(result)

@@ -1,6 +1,6 @@
 # Hype Remover Tool
 
-The Hype Remover tool removes exaggerated claims and marketing hype from text using OpenAI's language models or xAI's Grok model.
+The Hype Remover tool removes exaggerated claims and marketing hype from text using OpenAI's language models, xAI's Grok model, or Google's Gemini Flash 2.0 model.
 
 ## Features
 
@@ -8,14 +8,14 @@ The Hype Remover tool removes exaggerated claims and marketing hype from text us
 - Adjust the strength of hype removal (mild, moderate, strong)
 - Add custom hype terms to target specific marketing language
 - Provide context about the text to improve accuracy
-- Toggle between OpenAI and xAI (Grok) models
+- Toggle between OpenAI, xAI (Grok), and Google Gemini Flash 2.0 models
 - Get detailed explanations of changes made to the text
 
 ## How It Works
 
 1. The user enters text containing marketing hype or exaggerated claims
 2. The user can adjust settings like strength, custom hype terms, and context
-3. The text is processed by either OpenAI's GPT models or xAI's Grok model
+3. The text is processed by OpenAI's GPT models, xAI's Grok model, or Google's Gemini Flash 2.0 model
 4. The tool returns:
    - The processed text with hype removed
    - A list of changes made with explanations
@@ -33,6 +33,10 @@ The Hype Remover tool removes exaggerated claims and marketing hype from text us
     - `XAI_API_KEY`: Your xAI API key
     - `XAI_API_URL`: The xAI API endpoint (https://api.x.ai/v1)
 
+- **Google Gemini API** (optional): Used for language processing with Gemini Flash 2.0
+  - Required environment variables:
+    - `GEMINI_API_KEY`: Your Google Gemini API key
+
 ## Implementation Details
 
 ### Routes
@@ -43,7 +47,7 @@ The Hype Remover tool removes exaggerated claims and marketing hype from text us
 
 ### Service Functions
 
-- `remove_hype(text, strength, custom_hype_terms, context, api_key, use_xai)`: Removes hype from text using the specified model
+- `remove_hype(text, strength, custom_hype_terms, context, api_key, use_xai, use_gemini)`: Removes hype from text using the specified model
 - `store_feedback(original_text, processed_text, user_rating, user_comments)`: Stores user feedback for model improvement
 
 ## Usage Example
@@ -67,7 +71,18 @@ result = remove_hype(
     strength="strong",
     custom_hype_terms=["revolutionary", "ultimate"],
     context="Product marketing for a software tool",
-    use_xai=True
+    use_xai=True,
+    use_gemini=False
+)
+
+# Process text with Google Gemini Flash 2.0
+result = remove_hype(
+    text="Our revolutionary product is the ultimate solution that will transform your life!",
+    strength="moderate",
+    custom_hype_terms=["revolutionary", "ultimate"],
+    context="Product marketing for a software tool",
+    use_xai=False,
+    use_gemini=True
 )
 
 # Print the processed text
@@ -94,6 +109,7 @@ for change in result["changes"]:
 
 - **OpenAI API Error**: Check that your API key is valid and that you have sufficient credits in your account
 - **xAI API Error**: Ensure your API key is correct and that you're using the correct API endpoint
+- **Gemini API Error**: Verify your API key is valid and that you have the necessary permissions
 - **Model Availability**: If using xAI, ensure you're using an available model (e.g., grok-2-1212 instead of grok-3)
 - **Response Format Error**: Some OpenAI models don't support the JSON response format. The tool automatically handles this, but you may need to use a different model if you encounter errors.
 
@@ -103,3 +119,6 @@ for change in result["changes"]:
 - `OpenAI API error: 429`: Rate limit exceeded or insufficient credits
 - `OpenAI API error: 400 - Invalid parameter: 'response_format'`: The model doesn't support JSON response format
 - `xAI API error: 404 - The model does not exist`: The specified model is not available or doesn't exist
+- `Gemini API error: 400`: Invalid request format or parameters
+- `Gemini API error: 401`: Invalid API key or authentication issue
+- `Gemini API error: 429`: Rate limit exceeded or quota reached

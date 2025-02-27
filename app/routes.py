@@ -65,6 +65,7 @@ def api_status():
         "openai": bool(current_app.config.get("OPENAI_API_KEY")),
         "runwayml": bool(current_app.config.get("RUNWAYML_API_KEY")),
         "xai": bool(current_app.config.get("XAI_API_KEY")),
-        "hedra": bool(current_app.config.get("HEDRA_API_KEY"))
+        "hedra": bool(current_app.config.get("HEDRA_API_KEY")),
+        "gemini": bool(current_app.config.get("GEMINI_API_KEY"))
     }
     return jsonify(status)

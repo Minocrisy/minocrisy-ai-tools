@@ -4,8 +4,8 @@ A modular Flask-based web application for AI tools like Talking Head and Hype Re
 
 ## Features
 
-- **Talking Head Tool**: Generate animated talking head videos from text input using ElevenLabs for text-to-speech and RunwayML for animation.
-- **Hype Remover Tool**: Remove exaggerated claims and marketing hype from text using OpenAI's language models.
+- **Talking Head Tool**: Generate animated talking head videos from text input using ElevenLabs for text-to-speech and RunwayML for animation. Supports multiple AI image generators including DALL-E, GPT-4o, Grok, and Gemini Flash 2.0.
+- **Hype Remover Tool**: Remove exaggerated claims and marketing hype from text using multiple AI models including OpenAI, xAI's Grok, and Google's Gemini Flash 2.0.
 - **Grok Chat Tool**: Chat with xAI's Grok model for intelligent conversations and assistance. Supports image and document uploads for visual analysis with Grok Vision.
 - **Hedra Character Video Tool**: Generate character videos with synchronized speech using Hedra's API.
 - **Modular Architecture**: Easily add new AI tools to the platform.
@@ -24,6 +24,7 @@ A modular Flask-based web application for AI tools like Talking Head and Hype Re
   - OpenAI (for language processing)
   - RunwayML (for animation)
   - xAI (for Grok chat, optional)
+  - Google Gemini (for text and image generation, optional)
   - Hedra (for character video generation, optional)
 - Google Cloud account (for deployment)
 
@@ -110,7 +111,9 @@ minocrisy-ai-tools/
 │   └── utils/                  # Utility functions
 │       ├── __init__.py
 │       ├── secrets.py          # API key management
+│       ├── openai_api.py       # OpenAI API utilities
 │       ├── xai_api.py          # xAI API utilities
+│       ├── gemini_api.py       # Google Gemini API utilities
 │       └── hedra_api.py        # Hedra API utilities
 ├── main.py                     # Application entry point
 ├── dev.nix                     # Nix development environment
@@ -234,3 +237,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - [xAI](https://xai.com/)
 - [Hedra](https://hedra.com/)
 - [Google Cloud](https://cloud.google.com/)
+- [Google Gemini](https://ai.google.dev/)

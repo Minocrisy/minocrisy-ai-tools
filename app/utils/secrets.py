@@ -78,3 +78,7 @@ def get_hedra_api_key():
 def get_hedra_api_url():
     """Get the Hedra API URL."""
     return get_secret("HEDRA_API_URL") or current_app.config.get("HEDRA_API_URL")
+
+def get_gemini_api_key():
+    """Get the Google Gemini API key."""
+    return get_secret("GEMINI_API_KEY") or current_app.config.get("GEMINI_API_KEY")

@@ -5,18 +5,20 @@ Implementation of the Hype Remover tool functionality.
 import json
 from flask import current_app
 from app.utils.xai_api import chat_completion
+from app.utils.gemini_api import chat_completion as gemini_chat_completion
 
-def remove_hype(text, strength="moderate", custom_hype_terms=None, context=None, api_key=None, use_xai=True):
+def remove_hype(text, strength="moderate", custom_hype_terms=None, context=None, api_key=None, use_xai=True, use_gemini=False):
     """
-    Remove hype and exaggerated claims from text using xAI or OpenAI API.
+    Remove hype and exaggerated claims from text using Gemini, xAI, or OpenAI API.
     
     Args:
         text: The text to process.
         strength: The strength of hype removal (mild, moderate, strong).
         custom_hype_terms: Optional list of custom terms or phrases to identify as hype.
         context: Optional context about the text to improve accuracy.
-        api_key: The API key (not used when use_xai is True).
+        api_key: The API key (not used when use_xai or use_gemini is True).
         use_xai: Whether to use xAI API instead of OpenAI API.
+        use_gemini: Whether to use Google Gemini API. Takes precedence over use_xai if both are True.
         
     Returns:
         A dictionary containing the original text, processed text, changes made, and confidence scores.
@@ -77,7 +79,22 @@ def remove_hype(text, strength="moderate", custom_hype_terms=None, context=None,
     ]
     
     try:
-        if use_xai:
+        if use_gemini:
+            # Use Gemini API
+            content = gemini_chat_completion(
+                messages=messages,
+                model="gemini-2.0-flash",  # Use Gemini Flash 2.0
+                temperature=0.2,  # Lower temperature for more consistent results
+                max_tokens=4000   # Adjust based on expected response length
+            )
+            
+            if not content:
+                raise Exception("Failed to get response from Gemini API")
+            
+            # Parse the response
+            result = json.loads(content)
+            
+        elif use_xai:
             # Use xAI API
             content = chat_completion(
                 messages=messages,
