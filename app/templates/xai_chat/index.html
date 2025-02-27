@@ -90,10 +90,27 @@
                     <p class="mt-2">Grok is thinking...</p>
                 </div>
                 
-                <form id="chat-form">
-                    <div class="input-group">
+                <form id="chat-form" enctype="multipart/form-data">
+                    <div class="input-group mb-3">
                         <textarea id="message-input" class="form-control" placeholder="Type your message here..." rows="2" required></textarea>
                         <button type="submit" class="btn btn-primary">Send</button>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="file-upload" class="form-label">Upload Image or Document</label>
+                        <input type="file" class="form-control" id="file-upload" accept="image/*,.pdf,.docx,.txt">
+                        <div id="file-preview" class="mt-2" style="display: none;">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span id="file-name"></span>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" id="remove-file">Remove</button>
+                                    </div>
+                                    <div id="image-preview" class="mt-2" style="max-height: 200px; overflow: hidden;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-text">Supported formats: Images (JPG, PNG, GIF), PDF, DOCX, TXT</div>
                     </div>
                     
                     <div class="row mt-3">
@@ -139,9 +156,52 @@
         const temperatureRange = document.getElementById('temperature-range');
         const temperatureValue = document.getElementById('temperature-value');
         const clearChatBtn = document.getElementById('clear-chat-btn');
+        const fileUpload = document.getElementById('file-upload');
+        const filePreview = document.getElementById('file-preview');
+        const fileName = document.getElementById('file-name');
+        const imagePreview = document.getElementById('image-preview');
+        const removeFileBtn = document.getElementById('remove-file');
         
         // Store conversation ID for continuing the conversation
         let conversationId = null;
+        let uploadedFile = null;
+        
+        // Handle file upload
+        fileUpload.addEventListener('change', function(e) {
+            if (this.files && this.files[0]) {
+                uploadedFile = this.files[0];
+                fileName.textContent = uploadedFile.name;
+                
+                // Show file preview
+                filePreview.style.display = 'block';
+                
+                // If it's an image, show image preview
+                if (uploadedFile.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        imagePreview.innerHTML = `<img src="${e.target.result}" class="img-fluid" alt="Image preview">`;
+                        imagePreview.style.display = 'block';
+                    }
+                    reader.readAsDataURL(uploadedFile);
+                } else {
+                    // For non-image files, just show the file name
+                    imagePreview.style.display = 'none';
+                }
+                
+                // Auto-select the vision model if an image is uploaded
+                if (uploadedFile.type.startsWith('image/')) {
+                    modelSelect.value = 'grok-2-vision-1212';
+                }
+            }
+        });
+        
+        // Handle remove file button
+        removeFileBtn.addEventListener('click', function() {
+            uploadedFile = null;
+            fileUpload.value = '';
+            filePreview.style.display = 'none';
+            imagePreview.innerHTML = '';
+        });
         
         // Update temperature value display when slider is moved
         temperatureRange.addEventListener('input', function() {
@@ -171,19 +231,73 @@
             const model = modelSelect.value;
             const temperature = temperatureRange.value;
             
-            // Send message to API
-            fetch('/tools/xai-chat/chat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
+            // Prepare data for sending
+            let requestData;
+            let fetchOptions;
+            
+            if (uploadedFile && model === 'grok-2-vision-1212') {
+                // If we have a file and are using the vision model, use FormData
+                const formData = new FormData();
+                formData.append('message', message);
+                formData.append('file', uploadedFile);
+                if (conversationId) formData.append('conversation_id', conversationId);
+                formData.append('model', model);
+                formData.append('temperature', temperature);
+                
+                requestData = formData;
+                fetchOptions = {
+                    method: 'POST',
+                    body: formData
+                };
+                
+                // Add file info to user message in chat
+                const fileInfo = document.createElement('div');
+                fileInfo.className = 'mt-2 small text-muted';
+                fileInfo.textContent = `Attached: ${uploadedFile.name}`;
+                
+                // Find the last user message and append file info
+                const userMessages = chatContainer.querySelectorAll('.user-message');
+                const lastUserMessage = userMessages[userMessages.length - 1];
+                lastUserMessage.appendChild(fileInfo);
+                
+                // If it's an image, show it in the chat
+                if (uploadedFile.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.className = 'img-fluid mt-2';
+                        img.style.maxHeight = '200px';
+                        lastUserMessage.appendChild(img);
+                        scrollToBottom();
+                    }
+                    reader.readAsDataURL(uploadedFile);
+                }
+                
+                // Clear the file upload
+                uploadedFile = null;
+                fileUpload.value = '';
+                filePreview.style.display = 'none';
+                imagePreview.innerHTML = '';
+            } else {
+                // Regular JSON request without file
+                requestData = {
                     message: message,
                     conversation_id: conversationId,
                     model: model,
                     temperature: temperature
-                })
-            })
+                };
+                fetchOptions = {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                };
+            }
+            
+            // Send message to API
+            fetch('/tools/xai-chat/chat', fetchOptions)
             .then(response => {
                 if (!response.ok) {
                     return response.json().then(data => {

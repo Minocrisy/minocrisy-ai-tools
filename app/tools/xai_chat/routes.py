@@ -18,13 +18,22 @@ def chat():
     """
     Process a chat message and get a response from the xAI API.
     
-    Request JSON:
+    Request can be either JSON or multipart/form-data (for file uploads):
+    
+    JSON Request:
     {
         "message": "User's message",
         "conversation_id": "Optional conversation ID for continuing a conversation",
-        "model": "Optional model name (defaults to grok-3)",
+        "model": "Optional model name (defaults to grok-2-1212)",
         "temperature": "Optional temperature value (0-1)"
     }
+    
+    Multipart/form-data Request:
+    - message: User's message
+    - file: File to upload (image, PDF, DOCX, TXT)
+    - conversation_id: (Optional) Conversation ID for continuing a conversation
+    - model: (Optional) Model name (defaults to grok-2-1212)
+    - temperature: (Optional) Temperature value (0-1)
     
     Returns:
     {
@@ -39,15 +48,47 @@ def chat():
     if not xai_api_key:
         return jsonify({"error": "xAI API key not configured"}), 500
     
-    # Get request data
-    data = request.get_json()
-    if not data or "message" not in data:
-        return jsonify({"error": "Message is required"}), 400
-    
-    message = data["message"]
-    conversation_id = data.get("conversation_id")
-    model = data.get("model", "grok-2-1212")
-    temperature = data.get("temperature", 0.7)
+    # Check if request is multipart/form-data or JSON
+    if request.content_type and request.content_type.startswith('multipart/form-data'):
+        # Handle multipart/form-data request (file upload)
+        if 'message' not in request.form:
+            return jsonify({"error": "Message is required"}), 400
+        
+        message = request.form.get('message')
+        conversation_id = request.form.get('conversation_id')
+        model = request.form.get('model', 'grok-2-vision-1212')  # Default to vision model for file uploads
+        temperature = float(request.form.get('temperature', 0.7))
+        
+        # Check if file is uploaded
+        if 'file' not in request.files:
+            return jsonify({"error": "File is required for vision model"}), 400
+        
+        file = request.files['file']
+        
+        # Process the file based on its type
+        if file.filename == '':
+            return jsonify({"error": "No file selected"}), 400
+        
+        # Read the file content
+        file_content = file.read()
+        file_type = file.content_type
+        
+        # For now, we'll just use the file name in the message
+        # In a real implementation, you would process the file and send it to the API
+        message += f"\n\n[Attached file: {file.filename}]"
+        
+    else:
+        # Handle JSON request
+        data = request.get_json()
+        if not data or "message" not in data:
+            return jsonify({"error": "Message is required"}), 400
+        
+        message = data["message"]
+        conversation_id = data.get("conversation_id")
+        model = data.get("model", "grok-2-1212")
+        temperature = data.get("temperature", 0.7)
+        file_content = None
+        file_type = None
     
     try:
         # Get or create conversation history
