@@ -17,6 +17,18 @@
         display: none;
         margin-top: 20px;
     }
+    #research-container {
+        display: none;
+        margin-top: 20px;
+    }
+    #saved-outputs-container {
+        display: none;
+        margin-top: 20px;
+    }
+    #export-container {
+        display: none;
+        margin-top: 20px;
+    }
     .form-label {
         font-weight: bold;
     }
@@ -156,161 +168,321 @@
         <div class="alert alert-info">
             <strong>How it works:</strong> Enter your marketing text, select a strength level, and our AI will transform it into more factual, measured content. Choose from multiple AI models including xAI (Grok), OpenAI, and Gemini Flash 2.0.
         </div>
+        
+        <ul class="nav nav-tabs mb-3" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="hype-remover-tab" data-bs-toggle="tab" data-bs-target="#hype-remover-tab-pane" type="button" role="tab" aria-controls="hype-remover-tab-pane" aria-selected="true">Hype Remover</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="research-tab" data-bs-toggle="tab" data-bs-target="#research-tab-pane" type="button" role="tab" aria-controls="research-tab-pane" aria-selected="false">Research Tool</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="saved-tab" data-bs-toggle="tab" data-bs-target="#saved-tab-pane" type="button" role="tab" aria-controls="saved-tab-pane" aria-selected="false">Saved Outputs</button>
+            </li>
+        </ul>
     </div>
 </div>
 
-<div class="row mt-4">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                Input
-            </div>
-            <div class="card-body">
-                <form id="hype-remover-form">
-                    <div class="mb-3">
-                        <label for="text-input" class="form-label">Text to Process</label>
-                        <textarea id="text-input" class="form-control" rows="10" placeholder="Enter the marketing text you want to process..." required></textarea>
+<div class="tab-content" id="myTabContent">
+    <div class="tab-pane fade show active" id="hype-remover-tab-pane" role="tabpanel" aria-labelledby="hype-remover-tab" tabindex="0">
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        Input
                     </div>
-                    
-                    <div class="mb-3">
-                        <label for="strength-select" class="form-label">Hype Removal Strength</label>
-                        <select id="strength-select" class="form-select">
-                            <option value="mild">Mild - Tone down obvious exaggerations</option>
-                            <option value="moderate" selected>Moderate - Balance between promotional and factual</option>
-                            <option value="strong">Strong - Aggressively remove all marketing language</option>
-                        </select>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <div class="advanced-options-toggle" id="advanced-options-toggle">
-                            <i class="fas fa-cog"></i> Advanced Options
-                        </div>
-                        
-                        <div class="advanced-options" id="advanced-options">
+                    <div class="card-body">
+                        <form id="hype-remover-form">
                             <div class="mb-3">
-                                <label for="context-input" class="form-label">Context (Optional)</label>
-                                <textarea id="context-input" class="form-control" rows="3" placeholder="Provide context about the text to improve accuracy (e.g., industry, target audience, purpose)"></textarea>
-                                <div class="form-text">Adding context helps the AI understand domain-specific terminology and legitimate claims.</div>
+                                <label for="text-input" class="form-label">Text to Process</label>
+                                <textarea id="text-input" class="form-control" rows="10" placeholder="Enter the marketing text you want to process..." required></textarea>
                             </div>
                             
                             <div class="mb-3">
-                                <label class="form-label">Custom Hype Terms (Optional)</label>
-                                <div class="input-group">
-                                    <input type="text" id="custom-term-input" class="form-control" placeholder="Add custom terms to identify as hype">
-                                    <button class="btn btn-outline-secondary" type="button" id="add-term-button">Add</button>
+                                <label for="strength-select" class="form-label">Hype Removal Strength</label>
+                                <select id="strength-select" class="form-select">
+                                    <option value="mild">Mild - Tone down obvious exaggerations</option>
+                                    <option value="moderate" selected>Moderate - Balance between promotional and factual</option>
+                                    <option value="strong">Strong - Aggressively remove all marketing language</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <div class="advanced-options-toggle" id="advanced-options-toggle">
+                                    <i class="fas fa-cog"></i> Advanced Options
                                 </div>
-                                <div class="form-text">Add specific terms or phrases you want to identify as hype.</div>
-                                <div id="custom-terms-container" class="custom-terms-container"></div>
+                                
+                                <div class="advanced-options" id="advanced-options">
+                                    <div class="mb-3">
+                                        <label for="context-input" class="form-label">Context (Optional)</label>
+                                        <textarea id="context-input" class="form-control" rows="3" placeholder="Provide context about the text to improve accuracy (e.g., industry, target audience, purpose)"></textarea>
+                                        <div class="form-text">Adding context helps the AI understand domain-specific terminology and legitimate claims.</div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Custom Hype Terms (Optional)</label>
+                                        <div class="input-group">
+                                            <input type="text" id="custom-term-input" class="form-control" placeholder="Add custom terms to identify as hype">
+                                            <button class="btn btn-outline-secondary" type="button" id="add-term-button">Add</button>
+                                        </div>
+                                        <div class="form-text">Add specific terms or phrases you want to identify as hype.</div>
+                                        <div id="custom-terms-container" class="custom-terms-container"></div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">AI Model Selection</label>
+                                        <div class="form-check form-switch mb-2">
+                                            <input class="form-check-input" type="checkbox" id="use-xai-switch" checked>
+                                            <label class="form-check-label" for="use-xai-switch">Use xAI (Grok) API</label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="use-gemini-switch">
+                                            <label class="form-check-label" for="use-gemini-switch">Use Gemini Flash 2.0 API</label>
+                                        </div>
+                                        <div class="form-text">Select which AI model to use for processing. Gemini takes precedence over xAI if both are selected.</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">Process Text</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div id="loading-indicator">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-3">Processing your text...</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="result-container">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            Processed Text
+                        </div>
+                        <div class="card-body">
+                            <div class="score-container">
+                                <div class="score-label">
+                                    <span>Hype Score:</span>
+                                    <span id="hype-score-value">0%</span>
+                                </div>
+                                <div class="score-bar">
+                                    <div id="hype-score-fill" class="score-fill hype-score-fill" style="width: 0%"></div>
+                                </div>
+                                <div class="form-text">Higher score indicates more hype in the original text.</div>
+                            </div>
+                            
+                            <div class="score-container">
+                                <div class="score-label">
+                                    <span>Accuracy Score:</span>
+                                    <span id="accuracy-score-value">0%</span>
+                                </div>
+                                <div class="score-bar">
+                                    <div id="accuracy-score-fill" class="score-fill accuracy-score-fill" style="width: 0%"></div>
+                                </div>
+                                <div class="form-text">Higher score indicates higher confidence in the accuracy of the processed text.</div>
+                            </div>
+                            
+                            <p id="processed-text"></p>
+                            <div class="d-flex justify-content-between mt-3">
+                                <button id="copy-button" class="btn btn-sm btn-outline-primary">Copy to Clipboard</button>
+                                <div>
+                                    <button id="save-button" class="btn btn-sm btn-outline-success me-1">Save</button>
+                                    <button id="export-button" class="btn btn-sm btn-outline-info me-1">Export</button>
+                                    <button id="feedback-button" class="btn btn-sm btn-outline-secondary">Feedback</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            Changes Made
+                        </div>
+                        <div class="card-body">
+                            <div id="changes-container">
+                                <!-- Changes will be inserted here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="feedback-container" class="card">
+                    <div class="card-header">
+                        Provide Feedback
+                    </div>
+                    <div class="card-body">
+                        <form id="feedback-form">
+                            <div class="mb-3">
+                                <label class="form-label">How would you rate the quality of hype removal?</label>
+                                <div class="star-rating" id="star-rating">
+                                    <span class="star" data-rating="1">★</span>
+                                    <span class="star" data-rating="2">★</span>
+                                    <span class="star" data-rating="3">★</span>
+                                    <span class="star" data-rating="4">★</span>
+                                    <span class="star" data-rating="5">★</span>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="feedback-comments" class="form-label">Comments (Optional)</label>
+                                <textarea id="feedback-comments" class="form-control" rows="3" placeholder="Please share any specific feedback about the results..."></textarea>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between">
+                                <button type="button" id="cancel-feedback-button" class="btn btn-outline-secondary">Cancel</button>
+                                <button type="submit" class="btn btn-primary">Submit Feedback</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <div id="export-container" class="card">
+                    <div class="card-header">
+                        Export Options
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <button id="export-x-button" class="btn btn-outline-dark w-100 mb-2">
+                                <i class="fab fa-x-twitter"></i> Export as X Post
+                            </button>
+                            <button id="export-google-doc-button" class="btn btn-outline-primary w-100">
+                                <i class="fab fa-google-drive"></i> Export as Google Doc
+                            </button>
+                        </div>
+                        <div class="d-flex justify-content-end">
+                            <button type="button" id="cancel-export-button" class="btn btn-outline-secondary">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="save-container" class="card">
+                    <div class="card-header">
+                        Save Output
+                    </div>
+                    <div class="card-body">
+                        <form id="save-form">
+                            <div class="mb-3">
+                                <label for="save-title" class="form-label">Title</label>
+                                <input type="text" id="save-title" class="form-control" placeholder="Enter a title for this output" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="save-source" class="form-label">Source URL (Optional)</label>
+                                <input type="url" id="save-source" class="form-control" placeholder="Enter the source URL if applicable">
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <button type="button" id="cancel-save-button" class="btn btn-outline-secondary">Cancel</button>
+                                <button type="submit" class="btn btn-primary">Save</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="tab-pane fade" id="research-tab-pane" role="tabpanel" aria-labelledby="research-tab" tabindex="0">
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        Research Topic
+                    </div>
+                    <div class="card-body">
+                        <form id="research-form">
+                            <div class="mb-3">
+                                <label for="topic-input" class="form-label">Topic to Research</label>
+                                <input type="text" id="topic-input" class="form-control" placeholder="Enter a topic to research..." required>
                             </div>
                             
                             <div class="mb-3">
                                 <label class="form-label">AI Model Selection</label>
                                 <div class="form-check form-switch mb-2">
-                                    <input class="form-check-input" type="checkbox" id="use-xai-switch" checked>
-                                    <label class="form-check-label" for="use-xai-switch">Use xAI (Grok) API</label>
+                                    <input class="form-check-input" type="checkbox" id="research-use-xai-switch" checked>
+                                    <label class="form-check-label" for="research-use-xai-switch">Use xAI (Grok) API</label>
                                 </div>
                                 <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="use-gemini-switch">
-                                    <label class="form-check-label" for="use-gemini-switch">Use Gemini Flash 2.0 API</label>
+                                    <input class="form-check-input" type="checkbox" id="research-use-gemini-switch">
+                                    <label class="form-check-label" for="research-use-gemini-switch">Use Gemini Flash 2.0 API</label>
                                 </div>
-                                <div class="form-text">Select which AI model to use for processing. Gemini takes precedence over xAI if both are selected.</div>
+                                <div class="form-text">Select which AI model to use for research. Gemini takes precedence over xAI if both are selected.</div>
                             </div>
-                        </div>
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary">Process Text</button>
-                </form>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-6">
-        <div id="loading-indicator">
-            <div class="card">
-                <div class="card-body text-center">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                    <p class="mt-3">Processing your text...</p>
-                </div>
-            </div>
-        </div>
-        
-        <div id="result-container">
-            <div class="card mb-4">
-                <div class="card-header">
-                    Processed Text
-                </div>
-                <div class="card-body">
-                    <div class="score-container">
-                        <div class="score-label">
-                            <span>Hype Score:</span>
-                            <span id="hype-score-value">0%</span>
-                        </div>
-                        <div class="score-bar">
-                            <div id="hype-score-fill" class="score-fill hype-score-fill" style="width: 0%"></div>
-                        </div>
-                        <div class="form-text">Higher score indicates more hype in the original text.</div>
-                    </div>
-                    
-                    <div class="score-container">
-                        <div class="score-label">
-                            <span>Accuracy Score:</span>
-                            <span id="accuracy-score-value">0%</span>
-                        </div>
-                        <div class="score-bar">
-                            <div id="accuracy-score-fill" class="score-fill accuracy-score-fill" style="width: 0%"></div>
-                        </div>
-                        <div class="form-text">Higher score indicates higher confidence in the accuracy of the processed text.</div>
-                    </div>
-                    
-                    <p id="processed-text"></p>
-                    <div class="d-flex justify-content-between mt-3">
-                        <button id="copy-button" class="btn btn-sm btn-outline-primary">Copy to Clipboard</button>
-                        <button id="feedback-button" class="btn btn-sm btn-outline-secondary">Provide Feedback</button>
+                            
+                            <button type="submit" class="btn btn-primary">Research Topic</button>
+                        </form>
                     </div>
                 </div>
             </div>
             
-            <div class="card">
-                <div class="card-header">
-                    Changes Made
+            <div class="col-md-6">
+                <div id="research-loading-indicator" class="card" style="display: none;">
+                    <div class="card-body text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3">Researching topic...</p>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div id="changes-container">
-                        <!-- Changes will be inserted here -->
+                
+                <div id="research-result-container" style="display: none;">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            Research Results
+                        </div>
+                        <div class="card-body">
+                            <h5 id="research-topic" class="mb-3"></h5>
+                            <div class="mb-4">
+                                <h6>Summary</h6>
+                                <p id="research-summary"></p>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <h6>Key Points</h6>
+                                <ul id="research-key-points"></ul>
+                            </div>
+                            
+                            <div>
+                                <h6>Sources</h6>
+                                <div id="research-sources"></div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mt-4">
+                                <button id="research-copy-button" class="btn btn-sm btn-outline-primary">Copy to Clipboard</button>
+                                <div>
+                                    <button id="research-process-button" class="btn btn-sm btn-outline-success me-1">Process with Hype Remover</button>
+                                    <button id="research-save-button" class="btn btn-sm btn-outline-secondary">Save</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        
-        <div id="feedback-container" class="card">
-            <div class="card-header">
-                Provide Feedback
-            </div>
-            <div class="card-body">
-                <form id="feedback-form">
-                    <div class="mb-3">
-                        <label class="form-label">How would you rate the quality of hype removal?</label>
-                        <div class="star-rating" id="star-rating">
-                            <span class="star" data-rating="1">★</span>
-                            <span class="star" data-rating="2">★</span>
-                            <span class="star" data-rating="3">★</span>
-                            <span class="star" data-rating="4">★</span>
-                            <span class="star" data-rating="5">★</span>
+    </div>
+    
+    <div class="tab-pane fade" id="saved-tab-pane" role="tabpanel" aria-labelledby="saved-tab" tabindex="0">
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        Saved Outputs
+                    </div>
+                    <div class="card-body">
+                        <div id="saved-outputs-list">
+                            <!-- Saved outputs will be inserted here -->
+                            <div class="text-center py-5" id="no-saved-outputs">
+                                <p class="text-muted">No saved outputs yet. Process some text and save it to see it here.</p>
+                            </div>
                         </div>
                     </div>
-                    
-                    <div class="mb-3">
-                        <label for="feedback-comments" class="form-label">Comments (Optional)</label>
-                        <textarea id="feedback-comments" class="form-control" rows="3" placeholder="Please share any specific feedback about the results..."></textarea>
-                    </div>
-                    
-                    <div class="d-flex justify-content-between">
-                        <button type="button" id="cancel-feedback-button" class="btn btn-outline-secondary">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Submit Feedback</button>
-                    </div>
-                </form>
+                </div>
             </div>
         </div>
     </div>
@@ -331,6 +503,42 @@
         const useXaiSwitch = document.getElementById('use-xai-switch');
         const useGeminiSwitch = document.getElementById('use-gemini-switch');
         const apiBadge = document.getElementById('api-badge');
+        
+        // Research form elements
+        const researchForm = document.getElementById('research-form');
+        const topicInput = document.getElementById('topic-input');
+        const researchUseXaiSwitch = document.getElementById('research-use-xai-switch');
+        const researchUseGeminiSwitch = document.getElementById('research-use-gemini-switch');
+        
+        // Research result elements
+        const researchLoadingIndicator = document.getElementById('research-loading-indicator');
+        const researchResultContainer = document.getElementById('research-result-container');
+        const researchTopic = document.getElementById('research-topic');
+        const researchSummary = document.getElementById('research-summary');
+        const researchKeyPoints = document.getElementById('research-key-points');
+        const researchSources = document.getElementById('research-sources');
+        const researchCopyButton = document.getElementById('research-copy-button');
+        const researchProcessButton = document.getElementById('research-process-button');
+        const researchSaveButton = document.getElementById('research-save-button');
+        
+        // Export elements
+        const exportButton = document.getElementById('export-button');
+        const exportContainer = document.getElementById('export-container');
+        const exportXButton = document.getElementById('export-x-button');
+        const exportGoogleDocButton = document.getElementById('export-google-doc-button');
+        const cancelExportButton = document.getElementById('cancel-export-button');
+        
+        // Save elements
+        const saveButton = document.getElementById('save-button');
+        const saveContainer = document.getElementById('save-container');
+        const saveForm = document.getElementById('save-form');
+        const saveTitle = document.getElementById('save-title');
+        const saveSource = document.getElementById('save-source');
+        const cancelSaveButton = document.getElementById('cancel-save-button');
+        
+        // Saved outputs elements
+        const savedOutputsList = document.getElementById('saved-outputs-list');
+        const noSavedOutputs = document.getElementById('no-saved-outputs');
         
         // Advanced options toggle
         const advancedOptionsToggle = document.getElementById('advanced-options-toggle');
@@ -678,6 +886,630 @@
                 alert('Error: ' + error.message);
             });
         });
+        
+        // Handle export button
+        exportButton.addEventListener('click', function() {
+            resultContainer.style.display = 'none';
+            exportContainer.style.display = 'block';
+        });
+        
+        // Handle cancel export button
+        cancelExportButton.addEventListener('click', function() {
+            exportContainer.style.display = 'none';
+            resultContainer.style.display = 'block';
+        });
+        
+        // Handle export as X post
+        exportXButton.addEventListener('click', function() {
+            // Send request to API
+            fetch('/tools/hype-remover/export/x', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    text: processedTextContent
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(data => {
+                        throw new Error(data.error || 'Error exporting as X post');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Copy to clipboard
+                navigator.clipboard.writeText(data.formatted_text)
+                    .then(() => {
+                        // Hide export container
+                        exportContainer.style.display = 'none';
+                        resultContainer.style.display = 'block';
+                        
+                        // Show success message
+                        alert('X post copied to clipboard!');
+                    })
+                    .catch(err => {
+                        console.error('Failed to copy text: ', err);
+                        alert('Failed to copy X post to clipboard');
+                    });
+            })
+            .catch(error => {
+                // Hide export container
+                exportContainer.style.display = 'none';
+                resultContainer.style.display = 'block';
+                
+                // Show error
+                alert('Error: ' + error.message);
+            });
+        });
+        
+        // Handle export as Google Doc
+        exportGoogleDocButton.addEventListener('click', function() {
+            // Prompt for title
+            const title = prompt('Enter a title for the Google Doc:', 'Dehyped Content');
+            if (!title) return;
+            
+            // Send request to API
+            fetch('/tools/hype-remover/export/google-doc', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    title: title,
+                    text: processedTextContent
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(data => {
+                        throw new Error(data.error || 'Error exporting as Google Doc');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Copy to clipboard
+                navigator.clipboard.writeText(data.content)
+                    .then(() => {
+                        // Hide export container
+                        exportContainer.style.display = 'none';
+                        resultContainer.style.display = 'block';
+                        
+                        // Show success message
+                        alert('Google Doc content copied to clipboard!');
+                    })
+                    .catch(err => {
+                        console.error('Failed to copy text: ', err);
+                        alert('Failed to copy Google Doc content to clipboard');
+                    });
+            })
+            .catch(error => {
+                // Hide export container
+                exportContainer.style.display = 'none';
+                resultContainer.style.display = 'block';
+                
+                // Show error
+                alert('Error: ' + error.message);
+            });
+        });
+        
+        // Handle save button
+        saveButton.addEventListener('click', function() {
+            resultContainer.style.display = 'none';
+            saveContainer.style.display = 'block';
+            
+            // Set default title
+            saveTitle.value = 'Dehyped Content - ' + new Date().toLocaleString();
+        });
+        
+        // Handle cancel save button
+        cancelSaveButton.addEventListener('click', function() {
+            saveContainer.style.display = 'none';
+            resultContainer.style.display = 'block';
+        });
+        
+        // Handle save form submission
+        saveForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const title = saveTitle.value;
+            const source = saveSource.value;
+            
+            // Send request to API
+            fetch('/tools/hype-remover/save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    title: title,
+                    original_text: originalText,
+                    processed_text: processedTextContent,
+                    source_url: source
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(data => {
+                        throw new Error(data.message || 'Error saving output');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Hide save container
+                saveContainer.style.display = 'none';
+                resultContainer.style.display = 'block';
+                
+                // Show success message
+                alert(data.message || 'Output saved successfully!');
+                
+                // Refresh saved outputs if the saved tab is active
+                if (document.getElementById('saved-tab').classList.contains('active')) {
+                    loadSavedOutputs();
+                }
+            })
+            .catch(error => {
+                // Hide save container
+                saveContainer.style.display = 'none';
+                resultContainer.style.display = 'block';
+                
+                // Show error
+                alert('Error: ' + error.message);
+            });
+        });
+        
+        // Handle research form submission
+        researchForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const topic = topicInput.value;
+            const useXai = researchUseXaiSwitch.checked;
+            const useGemini = researchUseGeminiSwitch.checked;
+            
+            // Show loading indicator
+            researchLoadingIndicator.style.display = 'block';
+            researchResultContainer.style.display = 'none';
+            
+            // Prepare request data
+            const requestData = {
+                topic: topic,
+                use_xai: useXai,
+                use_gemini: useGemini
+            };
+            
+            // Send request to API
+            fetch('/tools/hype-remover/research', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(data => {
+                        throw new Error(data.error || 'Error researching topic');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Hide loading indicator
+                researchLoadingIndicator.style.display = 'none';
+                
+                // Show result
+                researchResultContainer.style.display = 'block';
+                
+                // Display research results
+                researchTopic.textContent = data.topic;
+                researchSummary.textContent = data.summary;
+                
+                // Display key points
+                researchKeyPoints.innerHTML = '';
+                if (data.key_points && data.key_points.length > 0) {
+                    data.key_points.forEach(point => {
+                        const li = document.createElement('li');
+                        li.textContent = point;
+                        researchKeyPoints.appendChild(li);
+                    });
+                } else {
+                    researchKeyPoints.innerHTML = '<li>No key points available</li>';
+                }
+                
+                // Display sources
+                researchSources.innerHTML = '';
+                if (data.sources && data.sources.length > 0) {
+                    data.sources.forEach(source => {
+                        const sourceDiv = document.createElement('div');
+                        sourceDiv.className = 'mb-2';
+                        
+                        let sourceHTML = `<strong>${source.title}</strong>`;
+                        if (source.url) {
+                            sourceHTML += ` - <a href="${source.url}" target="_blank">${source.url}</a>`;
+                        }
+                        if (source.description) {
+                            sourceHTML += `<p class="mb-0 small text-muted">${source.description}</p>`;
+                        }
+                        
+                        sourceDiv.innerHTML = sourceHTML;
+                        researchSources.appendChild(sourceDiv);
+                    });
+                } else {
+                    researchSources.innerHTML = '<p>No sources available</p>';
+                }
+                
+                // Store the research summary for processing
+                originalText = data.summary;
+            })
+            .catch(error => {
+                // Hide loading indicator
+                researchLoadingIndicator.style.display = 'none';
+                
+                // Show error
+                alert('Error: ' + error.message);
+            });
+        });
+        
+        // Handle research copy button
+        researchCopyButton.addEventListener('click', function() {
+            // Create a formatted text with the research results
+            let formattedText = `# ${researchTopic.textContent}\n\n`;
+            formattedText += `## Summary\n${researchSummary.textContent}\n\n`;
+            
+            formattedText += `## Key Points\n`;
+            const keyPoints = Array.from(researchKeyPoints.querySelectorAll('li')).map(li => `- ${li.textContent}`);
+            formattedText += keyPoints.join('\n') + '\n\n';
+            
+            formattedText += `## Sources\n`;
+            const sources = Array.from(researchSources.querySelectorAll('div')).map(div => {
+                const title = div.querySelector('strong').textContent;
+                const url = div.querySelector('a') ? div.querySelector('a').href : '';
+                const description = div.querySelector('p') ? div.querySelector('p').textContent : '';
+                
+                let sourceText = `- ${title}`;
+                if (url) sourceText += ` (${url})`;
+                if (description) sourceText += `\n  ${description}`;
+                
+                return sourceText;
+            });
+            formattedText += sources.join('\n');
+            
+            // Copy to clipboard
+            navigator.clipboard.writeText(formattedText)
+                .then(() => {
+                    const originalText = researchCopyButton.textContent;
+                    researchCopyButton.textContent = 'Copied!';
+                    setTimeout(() => {
+                        researchCopyButton.textContent = originalText;
+                    }, 2000);
+                })
+                .catch(err => {
+                    console.error('Failed to copy text: ', err);
+                    alert('Failed to copy text to clipboard');
+                });
+        });
+        
+        // Handle research process button
+        researchProcessButton.addEventListener('click', function() {
+            // Set the research summary as the text input
+            textInput.value = researchSummary.textContent;
+            
+            // Switch to the hype remover tab
+            document.getElementById('hype-remover-tab').click();
+            
+            // Submit the form
+            form.dispatchEvent(new Event('submit'));
+        });
+        
+        // Handle research save button
+        researchSaveButton.addEventListener('click', function() {
+            // Create a formatted text with the research results
+            let formattedText = `# ${researchTopic.textContent}\n\n`;
+            formattedText += `## Summary\n${researchSummary.textContent}\n\n`;
+            
+            formattedText += `## Key Points\n`;
+            const keyPoints = Array.from(researchKeyPoints.querySelectorAll('li')).map(li => `- ${li.textContent}`);
+            formattedText += keyPoints.join('\n') + '\n\n';
+            
+            formattedText += `## Sources\n`;
+            const sources = Array.from(researchSources.querySelectorAll('div')).map(div => {
+                const title = div.querySelector('strong').textContent;
+                const url = div.querySelector('a') ? div.querySelector('a').href : '';
+                const description = div.querySelector('p') ? div.querySelector('p').textContent : '';
+                
+                let sourceText = `- ${title}`;
+                if (url) sourceText += ` (${url})`;
+                if (description) sourceText += `\n  ${description}`;
+                
+                return sourceText;
+            });
+            formattedText += sources.join('\n');
+            
+            // Send request to API
+            fetch('/tools/hype-remover/save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    title: `Research: ${researchTopic.textContent}`,
+                    original_text: researchSummary.textContent,
+                    processed_text: formattedText
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(data => {
+                        throw new Error(data.message || 'Error saving research');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Show success message
+                alert(data.message || 'Research saved successfully!');
+                
+                // Refresh saved outputs if the saved tab is active
+                if (document.getElementById('saved-tab').classList.contains('active')) {
+                    loadSavedOutputs();
+                }
+            })
+            .catch(error => {
+                // Show error
+                alert('Error: ' + error.message);
+            });
+        });
+        
+        // Load saved outputs
+        function loadSavedOutputs() {
+            fetch('/tools/hype-remover/saved')
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.error || 'Error loading saved outputs');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Display saved outputs
+                    const outputs = data.outputs;
+                    
+                    if (Object.keys(outputs).length === 0) {
+                        noSavedOutputs.style.display = 'block';
+                        savedOutputsList.innerHTML = '';
+                    } else {
+                        noSavedOutputs.style.display = 'none';
+                        
+                        // Sort outputs by timestamp (newest first)
+                        const sortedOutputs = Object.entries(outputs).sort((a, b) => {
+                            return new Date(b[1].timestamp) - new Date(a[1].timestamp);
+                        });
+                        
+                        // Display outputs
+                        savedOutputsList.innerHTML = '';
+                        sortedOutputs.forEach(([id, output]) => {
+                            const card = document.createElement('div');
+                            card.className = 'card mb-3';
+                            
+                            const cardHeader = document.createElement('div');
+                            cardHeader.className = 'card-header d-flex justify-content-between align-items-center';
+                            
+                            const title = document.createElement('h5');
+                            title.className = 'mb-0';
+                            title.textContent = output.title;
+                            
+                            const deleteButton = document.createElement('button');
+                            deleteButton.className = 'btn btn-sm btn-outline-danger';
+                            deleteButton.innerHTML = '<i class="fas fa-trash"></i>';
+                            deleteButton.addEventListener('click', function() {
+                                if (confirm('Are you sure you want to delete this saved output?')) {
+                                    deleteSavedOutput(id);
+                                }
+                            });
+                            
+                            cardHeader.appendChild(title);
+                            cardHeader.appendChild(deleteButton);
+                            
+                            const cardBody = document.createElement('div');
+                            cardBody.className = 'card-body';
+                            
+                            const timestamp = document.createElement('p');
+                            timestamp.className = 'text-muted small mb-2';
+                            timestamp.textContent = `Saved on: ${new Date(output.timestamp).toLocaleString()}`;
+                            
+                            const text = document.createElement('p');
+                            text.textContent = output.processed_text.length > 200 ? 
+                                output.processed_text.substring(0, 200) + '...' : 
+                                output.processed_text;
+                            
+                            const buttonGroup = document.createElement('div');
+                            buttonGroup.className = 'd-flex justify-content-end mt-3';
+                            
+                            const viewButton = document.createElement('button');
+                            viewButton.className = 'btn btn-sm btn-outline-primary me-2';
+                            viewButton.textContent = 'View';
+                            viewButton.addEventListener('click', function() {
+                                viewSavedOutput(id);
+                            });
+                            
+                            const processButton = document.createElement('button');
+                            processButton.className = 'btn btn-sm btn-outline-success';
+                            processButton.textContent = 'Process Again';
+                            processButton.addEventListener('click', function() {
+                                processAgain(output.original_text);
+                            });
+                            
+                            buttonGroup.appendChild(viewButton);
+                            buttonGroup.appendChild(processButton);
+                            
+                            cardBody.appendChild(timestamp);
+                            cardBody.appendChild(text);
+                            cardBody.appendChild(buttonGroup);
+                            
+                            card.appendChild(cardHeader);
+                            card.appendChild(cardBody);
+                            
+                            savedOutputsList.appendChild(card);
+                        });
+                    }
+                })
+                .catch(error => {
+                    // Show error
+                    alert('Error: ' + error.message);
+                });
+        }
+        
+        // Delete saved output
+        function deleteSavedOutput(id) {
+            fetch(`/tools/hype-remover/saved/${id}`, {
+                method: 'DELETE'
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.message || 'Error deleting saved output');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Show success message
+                    alert(data.message || 'Output deleted successfully!');
+                    
+                    // Refresh saved outputs
+                    loadSavedOutputs();
+                })
+                .catch(error => {
+                    // Show error
+                    alert('Error: ' + error.message);
+                });
+        }
+        
+        // View saved output
+        function viewSavedOutput(id) {
+            fetch(`/tools/hype-remover/saved/${id}`)
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.error || 'Error loading saved output');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(output => {
+                    // Create modal
+                    const modal = document.createElement('div');
+                    modal.className = 'modal fade';
+                    modal.id = 'savedOutputModal';
+                    modal.tabIndex = '-1';
+                    modal.setAttribute('aria-labelledby', 'savedOutputModalLabel');
+                    modal.setAttribute('aria-hidden', 'true');
+                    
+                    modal.innerHTML = `
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="savedOutputModalLabel">${output.title}</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p class="text-muted small">Saved on: ${new Date(output.timestamp).toLocaleString()}</p>
+                                    <h6>Processed Text</h6>
+                                    <div class="border p-3 mb-3 bg-light">
+                                        <pre style="white-space: pre-wrap;">${output.processed_text}</pre>
+                                    </div>
+                                    <h6>Original Text</h6>
+                                    <div class="border p-3 bg-light">
+                                        <pre style="white-space: pre-wrap;">${output.original_text}</pre>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-primary" id="copy-saved-output">Copy Processed Text</button>
+                                    <button type="button" class="btn btn-success" id="process-saved-output">Process Again</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    document.body.appendChild(modal);
+                    
+                    // Initialize modal
+                    const modalElement = new bootstrap.Modal(modal);
+                    modalElement.show();
+                    
+                    // Handle copy button
+                    document.getElementById('copy-saved-output').addEventListener('click', function() {
+                        navigator.clipboard.writeText(output.processed_text)
+                            .then(() => {
+                                this.textContent = 'Copied!';
+                                setTimeout(() => {
+                                    this.textContent = 'Copy Processed Text';
+                                }, 2000);
+                            })
+                            .catch(err => {
+                                console.error('Failed to copy text: ', err);
+                                alert('Failed to copy text to clipboard');
+                            });
+                    });
+                    
+                    // Handle process again button
+                    document.getElementById('process-saved-output').addEventListener('click', function() {
+                        modalElement.hide();
+                        processAgain(output.original_text);
+                    });
+                    
+                    // Remove modal from DOM when hidden
+                    modal.addEventListener('hidden.bs.modal', function() {
+                        document.body.removeChild(modal);
+                    });
+                })
+                .catch(error => {
+                    // Show error
+                    alert('Error: ' + error.message);
+                });
+        }
+        
+        // Process text again
+        function processAgain(text) {
+            // Switch to the hype remover tab
+            document.getElementById('hype-remover-tab').click();
+            
+            // Set the text input
+            textInput.value = text;
+            
+            // Submit the form
+            form.dispatchEvent(new Event('submit'));
+        }
+        
+        // Load saved outputs when the saved tab is shown
+        document.getElementById('saved-tab').addEventListener('shown.bs.tab', function() {
+            loadSavedOutputs();
+        });
+        
+        // Update research API badge when toggle changes
+        researchUseXaiSwitch.addEventListener('change', function() {
+            updateResearchApiBadge();
+        });
+        
+        researchUseGeminiSwitch.addEventListener('change', function() {
+            updateResearchApiBadge();
+        });
+        
+        function updateResearchApiBadge() {
+            if (researchUseGeminiSwitch.checked) {
+                document.getElementById('research-tab').innerHTML = 'Research Tool <span class="api-badge gemini">Gemini</span>';
+            } else if (researchUseXaiSwitch.checked) {
+                document.getElementById('research-tab').innerHTML = 'Research Tool <span class="api-badge xai">xAI</span>';
+            } else {
+                document.getElementById('research-tab').innerHTML = 'Research Tool <span class="api-badge openai">OpenAI</span>';
+            }
+        }
     });
 </script>
 {% endblock %}

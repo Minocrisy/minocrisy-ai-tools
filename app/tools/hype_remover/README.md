@@ -10,6 +10,9 @@ The Hype Remover tool removes exaggerated claims and marketing hype from text us
 - Provide context about the text to improve accuracy
 - Toggle between OpenAI, xAI (Grok), and Google Gemini Flash 2.0 models
 - Get detailed explanations of changes made to the text
+- Research topics to get factual information
+- Save and manage outputs with local memory
+- Export content to different formats (X posts, Google Docs)
 
 ## How It Works
 
@@ -43,14 +46,30 @@ The Hype Remover tool removes exaggerated claims and marketing hype from text us
 
 - `GET /tools/hype-remover/`: Renders the Hype Remover tool interface
 - `POST /tools/hype-remover/process`: Processes text to remove hype
+- `POST /tools/hype-remover/research`: Researches a topic and returns information
+- `POST /tools/hype-remover/save`: Saves processed text to local memory
+- `GET /tools/hype-remover/saved`: Gets all saved outputs for the current user
+- `GET /tools/hype-remover/saved/<output_id>`: Gets a specific saved output
+- `DELETE /tools/hype-remover/saved/<output_id>`: Deletes a specific saved output
+- `POST /tools/hype-remover/export/x`: Formats text as an X (Twitter) post
+- `POST /tools/hype-remover/export/google-doc`: Formats text as Google Doc content
 - `POST /tools/hype-remover/feedback`: Stores user feedback on hype removal results
 
 ### Service Functions
 
 - `remove_hype(text, strength, custom_hype_terms, context, api_key, use_xai, use_gemini)`: Removes hype from text using the specified model
+- `research_topic(topic, api_key, use_xai, use_gemini)`: Researches a topic using the specified model
+- `save_output(title, original_text, processed_text, source_url)`: Saves processed text to local memory
+- `get_saved_outputs()`: Gets all saved outputs for the current user
+- `get_saved_output(output_id)`: Gets a specific saved output
+- `delete_saved_output(output_id)`: Deletes a specific saved output
+- `create_x_post(text)`: Formats text as an X (Twitter) post
+- `create_google_doc_content(title, text, source_url)`: Formats text as Google Doc content
 - `store_feedback(original_text, processed_text, user_rating, user_comments)`: Stores user feedback for model improvement
 
-## Usage Example
+## Usage Examples
+
+### Hype Removal
 
 ```python
 from app.tools.hype_remover.service import remove_hype
@@ -62,7 +81,8 @@ result = remove_hype(
     custom_hype_terms=["revolutionary", "ultimate"],
     context="Product marketing for a software tool",
     api_key="your_openai_api_key",
-    use_xai=False
+    use_xai=False,
+    use_gemini=False
 )
 
 # Process text with xAI (Grok)
@@ -95,6 +115,83 @@ for change in result["changes"]:
     print(f"Replacement: {change['replacement']}")
     print(f"Reason: {change['reason']}")
     print(f"Confidence: {change['confidence']}")
+```
+
+### Research
+
+```python
+from app.tools.hype_remover.service import research_topic
+
+# Research a topic with Gemini Flash 2.0
+result = research_topic(
+    topic="Quantum Computing",
+    use_xai=False,
+    use_gemini=True
+)
+
+# Print the research summary
+print(result["summary"])
+
+# Print the key points
+for point in result["key_points"]:
+    print(f"- {point}")
+
+# Print the sources
+for source in result["sources"]:
+    print(f"- {source['title']}")
+    if source.get('url'):
+        print(f"  URL: {source['url']}")
+    if source.get('description'):
+        print(f"  Description: {source['description']}")
+```
+
+### Saving and Retrieving Outputs
+
+```python
+from app.tools.hype_remover.service import save_output, get_saved_outputs, get_saved_output, delete_saved_output
+
+# Save an output
+output_id = save_output(
+    title="Dehyped Marketing Copy",
+    original_text="Our revolutionary product is the ultimate solution!",
+    processed_text="Our product is a helpful solution.",
+    source_url="https://example.com/marketing"
+)
+
+# Get all saved outputs
+outputs = get_saved_outputs()
+for id, output in outputs.items():
+    print(f"ID: {id}")
+    print(f"Title: {output['title']}")
+    print(f"Timestamp: {output['timestamp']}")
+
+# Get a specific saved output
+output = get_saved_output(output_id)
+if output:
+    print(f"Title: {output['title']}")
+    print(f"Original: {output['original_text']}")
+    print(f"Processed: {output['processed_text']}")
+
+# Delete a saved output
+success = delete_saved_output(output_id)
+```
+
+### Export Formats
+
+```python
+from app.tools.hype_remover.service import create_x_post, create_google_doc_content
+
+# Format as X (Twitter) post
+x_post = create_x_post("Our product is a helpful solution that can improve your workflow.")
+print(x_post)  # Will be truncated to 280 characters if necessary
+
+# Format as Google Doc content
+doc_content = create_google_doc_content(
+    title="Dehyped Marketing Copy",
+    text="Our product is a helpful solution that can improve your workflow.",
+    source_url="https://example.com/marketing"
+)
+print(doc_content)
 ```
 
 ## Strength Levels
