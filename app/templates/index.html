@@ -21,7 +21,7 @@
                     <li class="list-group-item">Animate a virtual presenter with lip-syncing</li>
                     <li class="list-group-item">Create engaging video content quickly</li>
                 </ul>
-                <a href="/tools/talking-head" class="btn btn-primary">Try Talking Head</a>
+                <a href="{{ url_for('talking_head.index') }}" class="btn btn-primary">Try Talking Head</a>
             </div>
         </div>
     </div>
@@ -36,7 +36,7 @@
                     <li class="list-group-item">Adjust the strength of hype removal</li>
                     <li class="list-group-item">See detailed explanations of changes made</li>
                 </ul>
-                <a href="/tools/hype-remover" class="btn btn-primary">Try Hype Remover</a>
+                <a href="{{ url_for('hype_remover.index') }}" class="btn btn-primary">Try Hype Remover</a>
             </div>
         </div>
     </div>
@@ -53,7 +53,7 @@
                     <li class="list-group-item">Generate creative content and ideas</li>
                     <li class="list-group-item">Adjust temperature for more focused or creative responses</li>
                 </ul>
-                <a href="/tools/xai-chat" class="btn btn-primary">Try Grok Chat</a>
+                <a href="{{ url_for('xai_chat.index') }}" class="btn btn-primary">Try Grok Chat</a>
             </div>
         </div>
     </div>
@@ -70,7 +70,7 @@
                     <li class="list-group-item">Choose from various character models</li>
                     <li class="list-group-item">Select different voices for customization</li>
                 </ul>
-                <a href="/tools/hedra-character" class="btn btn-primary">Try Hedra Character Video</a>
+                <a href="{{ url_for('hedra_character.index') }}" class="btn btn-primary">Try Hedra Character Video</a>
             </div>
         </div>
     </div>
@@ -96,7 +96,7 @@
 <script>
     // Fetch API status on page load
     document.addEventListener('DOMContentLoaded', function() {
-        fetch('/api/status')
+        fetch("{{ url_for('main.api_status') }}")
             .then(response => response.json())
             .then(data => {
                 const statusDiv = document.getElementById('api-status');

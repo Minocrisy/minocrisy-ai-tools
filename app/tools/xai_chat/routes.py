@@ -46,7 +46,7 @@ def chat():
     
     message = data["message"]
     conversation_id = data.get("conversation_id")
-    model = data.get("model", "grok-3")
+    model = data.get("model", "grok-2-1212")
     temperature = data.get("temperature", 0.7)
     
     try:

@@ -81,7 +81,7 @@ def remove_hype(text, strength="moderate", custom_hype_terms=None, context=None,
             # Use xAI API
             content = chat_completion(
                 messages=messages,
-                model="grok-3",  # Use Grok-3 for better understanding of context and nuance
+                model="grok-2-1212",  # Use available model
                 temperature=0.2,  # Lower temperature for more consistent results
                 max_tokens=4000   # Adjust based on expected response length
             )
@@ -104,12 +104,17 @@ def remove_hype(text, strength="moderate", custom_hype_terms=None, context=None,
             }
             
             data = {
-                "model": "gpt-4",
+                "model": "gpt-4-turbo",
                 "messages": messages,
                 "temperature": 0.2,
                 "max_tokens": 2000,
                 "response_format": {"type": "json_object"}
             }
+            
+            # Check if the model supports response_format
+            if "gpt-4-turbo" not in data["model"] and "gpt-4-0125" not in data["model"] and "gpt-3.5-turbo-0125" not in data["model"]:
+                # Remove response_format for models that don't support it
+                data.pop("response_format", None)
             
             response = requests.post(url, json=data, headers=headers)
             

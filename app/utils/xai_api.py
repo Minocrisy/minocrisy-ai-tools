@@ -43,8 +43,12 @@ def chat_completion(messages, model="grok-3", temperature=0.7, max_tokens=1000):
         response = requests.post(
             f"{api_url}/chat/completions",
             headers=headers,
-            json=data
+            json=data,
+            verify=False  # Disable SSL certificate verification
         )
+        # Suppress InsecureRequestWarning
+        import urllib3
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
         
         if response.status_code != 200:
             current_app.logger.error(f"xAI API error: {response.status_code} - {response.text}")
@@ -95,7 +99,8 @@ def generate_image(prompt, model="grok-image-1", size="1024x1024", quality="stan
         response = requests.post(
             f"{api_url}/images/generations",
             headers=headers,
-            json=data
+            json=data,
+            verify=False  # Disable SSL certificate verification
         )
         
         if response.status_code != 200:
