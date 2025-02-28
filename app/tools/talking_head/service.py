@@ -92,12 +92,13 @@ def generate_image(prompt, generator="default", model=None, save_path=None, as_d
             if urls and len(urls) > 0:
                 image_url = urls[0]
         
-        elif generator == "gemini":
-            # Use Gemini models
-            gemini_model = model or "gemini-2.0-flash"
-            urls = generate_image_gemini(prompt, model=gemini_model)
-            if urls and len(urls) > 0:
-                image_url = urls[0]
+        # Gemini image generation is temporarily disabled due to API compatibility issues
+        # elif generator == "gemini":
+        #     # Use Gemini models
+        #     gemini_model = model or "gemini-pro-vision"
+        #     urls = generate_image_gemini(prompt, model=gemini_model)
+        #     if urls and len(urls) > 0:
+        #         image_url = urls[0]
         
         else:
             # Default to using a pre-defined image
